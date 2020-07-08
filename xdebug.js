@@ -18,7 +18,7 @@ async function updateIcon() {
 async function toggleCookie() {
     let cookie = await getCookie();
     let currentUrl = currentTab.url;
-
+    let cookieName = await getValueToSet();
     if (cookie) {
         browser.cookies.remove({
             url: currentUrl.replace(/:{1}[0-9]{1}\d*/, ''),
@@ -28,12 +28,10 @@ async function toggleCookie() {
         updateIcon();
         return null;
     }
-
-    let valueToSet = await getValueToSet();
     browser.cookies.set({
         url: currentUrl.replace(/:{1}[0-9]{1}\d*/, ''),
         name: cookieName,
-        value: valueToSet,
+        value: "Y",
         path: "/",
         storeId: currentTab.cookieStoreId
     });
@@ -61,12 +59,12 @@ async function getIcons(cookie) {
 async function getValueToSet() {
     let config = await browser.storage.sync.get('xdebug_session');
 
-    return config.xdebug_session || 'phpstorm';
+    return config.xdebug_session || '_NCC';
 }
 
 async function getCookie() {
     let currentUrl = currentTab.url;
-    let valueToSet = await getValueToSet();
+    let cookieName = await getValueToSet();
 
     let cookie = await browser.cookies.get({
         url: currentUrl.replace(/:{1}[0-9]{1}\d*/, ''),
@@ -74,7 +72,7 @@ async function getCookie() {
         storeId: currentTab.cookieStoreId
     });
 
-    if (cookie && cookie.value == valueToSet) {
+    if (cookie && cookie.value == "Y") {
         return cookie;
     }
 
@@ -89,7 +87,10 @@ async function updateActiveTab() {
         }
     }
 
-    let tabs = await browser.tabs.query({active: true, currentWindow: true});
+    let tabs = await browser.tabs.query({
+        active: true,
+        currentWindow: true
+    });
     updateTab(tabs);
 }
 
@@ -99,4 +100,3 @@ browser.browserAction.onClicked.addListener(toggleCookie);
 browser.tabs.onUpdated.addListener(updateActiveTab);
 browser.tabs.onActivated.addListener(updateActiveTab);
 browser.windows.onFocusChanged.addListener(updateActiveTab);
-
