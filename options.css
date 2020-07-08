@@ -1,7 +1,7 @@
 :root {
     --gutter-size: 10px;
     --input-height: 2rem;
-    --label-width: 7rem;
+    --label-width: 30rem;
 }
 
 .options-form,
@@ -41,11 +41,11 @@
 }
 
 input[type=radio],
-.xdebug-session-icon {
+.cookie-ncc-icon {
     vertical-align: middle;
 }
 
-.xdebug-session-icon {
+.cookie-ncc-icon {
     height: var(--input-height);
 }
 

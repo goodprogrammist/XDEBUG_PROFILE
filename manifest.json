@@ -1,9 +1,9 @@
 {
     "manifest_version": 2,
-    "name": "_NCC Cookie for Bitrix",
-    "version": "1.2.1",
+    "name": "Manage _NCC Cookie for Bitrix",
+    "version": "0.1",
 
-    "description": "Adds cookie that disables COMPOSITE technology.",
+    "description": "Manage cookie that disables Composite technology.",
     "homepage_url": "https://github.com/goodprogrammist/bitrix_NCC_cookie",
 
     "icons": {
@@ -33,11 +33,11 @@
 
     "applications": {
         "gecko": {
-            "id": "ncc_cookie_setup@goodprogrammist.ru"
+            "id": "cookie_ncc@goodprogrammist.ru"
         }
     },
 
     "background": {
-        "scripts": ["xdebug.js"]
+        "scripts": ["cookie_ncc.js"]
     }
 }

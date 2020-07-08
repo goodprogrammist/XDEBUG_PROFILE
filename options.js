@@ -5,27 +5,27 @@ async function saveOptions(e) {
     hideMessages();
 
     let saved = browser.storage.sync.set({
-        xdebug_session: document.querySelector(".xdebug_session").value,
-        xdebug_session_on_color: document.querySelector(".xdebug-session-on-color:checked").value,
-        xdebug_session_off_color: document.querySelector(".xdebug-session-off-color:checked").value
+        cookie_ncc: document.querySelector(".cookie_ncc").value,
+        cookie_ncc_on_color: document.querySelector(".cookie-ncc-on-color:checked").value,
+        cookie_ncc_off_color: document.querySelector(".cookie-ncc-off-color:checked").value
     });
     saved.then(showSuccess, showError);
 }
 
 async function restoreOptions() {
     const items = [
-        'xdebug_session',
-        'xdebug_session_on_color',
-        'xdebug_session_off_color'
+        'cookie_ncc',
+        'cookie_ncc_on_color',
+        'cookie_ncc_off_color'
     ];
     let sessionKey = await browser.storage.sync.get(items);
 
-    document.querySelector(".xdebug_session").value = sessionKey.xdebug_session || '?????_NCC';
+    document.querySelector(".cookie_ncc").value = sessionKey.cookie_ncc || '?????_NCC';
 
-    let onColor = sessionKey.xdebug_session_on_color || 'red';
-    let offColor = sessionKey.xdebug_session_off_color || 'light';
-    document.querySelector(".xdebug-session-on-color[value="+ onColor +"]").checked = true;
-    document.querySelector(".xdebug-session-off-color[value="+ offColor +"]").checked = true;
+    let onColor = sessionKey.cookie_ncc_on_color || 'red';
+    let offColor = sessionKey.cookie_ncc_off_color || 'light';
+    document.querySelector(".cookie-ncc-on-color[value="+ onColor +"]").checked = true;
+    document.querySelector(".cookie-ncc-off-color[value="+ offColor +"]").checked = true;
 }
 
 function showSuccess() {

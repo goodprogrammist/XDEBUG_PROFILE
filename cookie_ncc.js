@@ -39,10 +39,10 @@ async function toggleCookie() {
 }
 
 async function getIcons(cookie) {
-    let state = 'xdebug_session_off_color';
+    let state = 'cookie_ncc_off_color';
     let stateColor = 'light';
     if (cookie) {
-        state = 'xdebug_session_on_color';
+        state = 'cookie_ncc_on_color';
         stateColor = 'red';
     }
     let config = await browser.storage.sync.get(state);
@@ -57,9 +57,9 @@ async function getIcons(cookie) {
 }
 
 async function getValueToSet() {
-    let config = await browser.storage.sync.get('xdebug_session');
+    let config = await browser.storage.sync.get('cookie_ncc');
 
-    return config.xdebug_session || '_NCC';
+    return config.cookie_ncc || '_NCC';
 }
 
 async function getCookie() {
