@@ -6,3 +6,7 @@ xdebug-session-cookie.zip
 
 # screenshots
 screens/
+
+# shells
+*.sh
+

@@ -1,4 +1,4 @@
-let cookieName = 'XDEBUG_SESSION';
+let cookieName = '_NCC';
 let currentTab;
 
 async function updateIcon() {
