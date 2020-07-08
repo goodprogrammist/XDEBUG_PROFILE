@@ -20,7 +20,7 @@ async function restoreOptions() {
     ];
     let sessionKey = await browser.storage.sync.get(items);
 
-    document.querySelector(".xdebug_session").value = sessionKey.xdebug_session || 'phpstorm';
+    document.querySelector(".xdebug_session").value = sessionKey.xdebug_session || '?????_NCC';
 
     let onColor = sessionKey.xdebug_session_on_color || 'red';
     let offColor = sessionKey.xdebug_session_off_color || 'light';
