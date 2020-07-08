@@ -4,7 +4,7 @@
     "version": "1.2",
 
     "description": "Adds cookie that disables COMPOSITE technology.",
-    "homepage_url": "https://github.com/kudlatyamroth/xdebug-session-cookie",
+    "homepage_url": "https://github.com/goodprogrammist/bitrix_NCC_cookie",
 
     "icons": {
         "64": "icons/bug-green-64.png",
