@@ -1,2 +1,2 @@
-# xdebug-session-cookie
-Firefox addon for setting xdebug session cookie
+# _NCC (bitrix cookie)
+Firefox addon for setting _NCC cookie
