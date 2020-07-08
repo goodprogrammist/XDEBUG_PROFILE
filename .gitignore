@@ -2,7 +2,7 @@
 .idea/
 
 # packed extendsion
-xdebug-session-cookie.zip
+*.zip
 
 # screenshots
 screens/
