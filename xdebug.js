@@ -10,7 +10,7 @@ async function updateIcon() {
         tabId: currentTab.id
     });
     browser.browserAction.setTitle({
-        title: cookie ? 'xDEBUG Session (on)' : 'xDEBUG Session (off)',
+        title: cookie ? '_NCC cookie (on)' : '_NCC cookie (off)',
         tabId: currentTab.id
     });
 }
