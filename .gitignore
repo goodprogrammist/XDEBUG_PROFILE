@@ -4,9 +4,6 @@
 # packed extendsion
 *.zip
 
-# screenshots
-screens/
-
 # shells
 *.sh
 
