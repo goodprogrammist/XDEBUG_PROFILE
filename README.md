@@ -1,2 +1,2 @@
-# _NCC (bitrix cookie)
-Firefox addon for setting _NCC cookie
+# XDEBUG_PROFILE (cookie trigger)
+Firefox addon for setting XDEBUG_PROFILE cookie

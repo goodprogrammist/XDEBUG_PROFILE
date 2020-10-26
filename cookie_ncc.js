@@ -1,4 +1,4 @@
-let cookieName = '_NCC';
+let cookieName = 'XDEBUG_PROFILE';
 let currentTab;
 
 async function updateIcon() {
@@ -10,7 +10,7 @@ async function updateIcon() {
         tabId: currentTab.id
     });
     browser.browserAction.setTitle({
-        title: cookie ? '_NCC cookie (on)' : '_NCC cookie (off)',
+        title: cookie ? 'XDEBUG_PROFILE cookie (on)' : 'XDEBUG_PROFILE cookie (off)',
         tabId: currentTab.id
     });
 }
@@ -39,10 +39,10 @@ async function toggleCookie() {
 }
 
 async function getIcons(cookie) {
-    let state = 'cookie_ncc_off_color';
+    let state = 'cookie_XDEBUG_PROFILE_off_color';
     let stateColor = 'light';
     if (cookie) {
-        state = 'cookie_ncc_on_color';
+        state = 'cookie_XDEBUG_PROFILE_on_color';
         stateColor = 'red';
     }
     let config = await browser.storage.sync.get(state);
@@ -57,9 +57,9 @@ async function getIcons(cookie) {
 }
 
 async function getValueToSet() {
-    let config = await browser.storage.sync.get('cookie_ncc');
+    let config = await browser.storage.sync.get('cookie_XDEBUG_PROFILE');
 
-    return config.cookie_ncc || '_NCC';
+    return config.cookie_XDEBUG_PROFILE || 'XDEBUG_PROFILE';
 }
 
 async function getCookie() {

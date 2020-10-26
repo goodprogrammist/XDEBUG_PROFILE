@@ -1,10 +1,10 @@
 {
     "manifest_version": 2,
-    "name": "Manage _NCC Cookie for Bitrix",
+    "name": "Manage XDEBUG_PROFILE Cookie for Debugging",
     "version": "0.1",
 
     "description": "Manage cookie that disables Composite technology.",
-    "homepage_url": "https://github.com/goodprogrammist/bitrix_NCC_cookie",
+    "homepage_url": "https://github.com/goodprogrammist/XDEBUG_PROFILE",
 
     "icons": {
         "64": "icons/bug-green-64.png",
@@ -23,7 +23,7 @@
             "64": "icons/bug-light-64.png",
             "128": "icons/bug-light-128.png"
         },
-        "default_title": "_NCC (off)"
+        "default_title": "XDEBUG_PROFILE (off)"
     },
 
     "options_ui": {
@@ -33,11 +33,11 @@
 
     "applications": {
         "gecko": {
-            "id": "ncc_cookie_setup@goodprogrammist.ru"
+            "id": "XDEBUG_PROFILE_cookie_setup@goodprogrammist.ru"
         }
     },
 
     "background": {
-        "scripts": ["cookie_ncc.js"]
+        "scripts": ["cookie_XDEBUG_PROFILE.js"]
     }
 }
