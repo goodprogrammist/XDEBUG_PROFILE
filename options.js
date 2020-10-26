@@ -20,7 +20,7 @@ async function restoreOptions() {
     ];
     let sessionKey = await browser.storage.sync.get(items);
 
-    document.querySelector(".cookie_XDEBUG_PROFILE").value = sessionKey.cookie_XDEBUG_PROFILE || '?????_XDEBUG_PROFILE';
+    document.querySelector(".cookie_XDEBUG_PROFILE").value = sessionKey.cookie_XDEBUG_PROFILE || 'XDEBUG_PROFILE';
 
     let onColor = sessionKey.cookie_XDEBUG_PROFILE_on_color || 'red';
     let offColor = sessionKey.cookie_XDEBUG_PROFILE_off_color || 'light';
