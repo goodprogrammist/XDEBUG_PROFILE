@@ -1,6 +1,7 @@
 # intellij
 .idea/
 .vscode/
+
 # packed extendsion
 *.zip
 
