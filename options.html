@@ -6,6 +6,11 @@
         <link href="options.css" rel="stylesheet">
     </head>
 <body>
+    <div class="welcome-row" hidden>
+        <strong>Choose your IDE</strong> for step debugging below and press Save.
+        The value of the XDEBUG_SESSION cookie is passed to the IDE as IDE key.
+    </div>
+
     <div class="permission-row" hidden>
         The addon needs access to sites to manage cookies.
         <button type="button" class="grant">Grant access</button>
@@ -70,7 +75,18 @@
             <label class="input-label trigger-name-label"></label>
             <input type="text" class="trigger-name">
         </div>
-        <div class="form-row">
+        <div class="form-row ide-row" hidden>
+            <label class="input-label">IDE</label>
+            <select class="trigger-ide"></select>
+        </div>
+        <div class="form-row ide-hint-row" hidden>
+            <span class="hint">
+                Without DBGp proxy and xdebug.trigger_value any IDE key works.
+                With DBGp proxy it must match the key of your IDE
+                (VS Code: php.debug.ideKey setting, default "vsc").
+            </span>
+        </div>
+        <div class="form-row trigger-value-row">
             <label class="input-label trigger-value-label"></label>
             <input type="text" class="trigger-value">
         </div>

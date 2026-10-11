@@ -174,7 +174,8 @@ async function onCommand(command) {
 // Firefox MV3 treats host permissions as optional: open options with "Grant access" button if needed
 async function onInstalled(details) {
     log('installed:', details.reason);
-    if (!await hasHostPermission()) {
+    // On first install the options page asks to choose the IDE
+    if (details.reason === 'install' || !await hasHostPermission()) {
         api.runtime.openOptionsPage();
     }
     await updateActiveTabs();

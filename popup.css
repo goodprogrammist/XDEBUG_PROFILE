@@ -45,6 +45,17 @@ body {
     min-width: 52px;
 }
 
+.trigger-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.trigger-ide {
+    color: var(--text);
+    font-size: 12px;
+}
+
 .trigger-cookie {
     color: var(--muted);
     font-family: monospace;

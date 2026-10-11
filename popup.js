@@ -37,6 +37,13 @@ async function render() {
         checkbox.addEventListener('change', onTriggerChange);
         row.querySelector('.trigger-label').textContent = trigger.label;
         row.querySelector('.trigger-cookie').textContent = trigger.name + '=' + trigger.value;
+        if (trigger.ide) {
+            let ide = row.querySelector('.trigger-ide');
+            ide.hidden = false;
+            ide.textContent = getIdeLabel(trigger.value);
+            ide.title = 'Change IDE in settings';
+            ide.addEventListener('click', openOptions);
+        }
         container.appendChild(row);
     }
 
@@ -95,11 +102,13 @@ async function onGrantClick() {
 
 document.querySelector('.scope').addEventListener('change', onScopeChange);
 document.querySelector('.grant').addEventListener('click', onGrantClick);
-document.querySelector('.open-options').addEventListener('click', function(e) {
+function openOptions(e) {
     e.preventDefault();
     api.runtime.openOptionsPage();
     window.close();
-});
+}
+
+document.querySelector('.open-options').addEventListener('click', openOptions);
 
 render().catch(err => {
     logError('popup: render failed', err);

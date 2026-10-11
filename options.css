@@ -89,7 +89,7 @@ input[type=radio],
     margin-top: var(--gutter-size);
 }
 
-.triggers .form-row:nth-child(2n+1):not(:first-child) {
+.triggers .form-row:has(.trigger-name):not(:first-child) {
     margin-top: calc(3 * var(--gutter-size));
 }
 
@@ -107,4 +107,23 @@ input[type=radio],
 
 [hidden] {
     display: none !important;
+}
+
+.welcome-row {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #16a085;
+    border-radius: 3px;
+}
+
+.form-row > select {
+    margin: 0 var(--gutter-size);
+    height: var(--input-height);
+    flex: 1;
+}
+
+.form-row > .hint {
+    margin-left: calc(var(--label-width) + 2 * var(--gutter-size));
+    font-size: 0.85rem;
+    opacity: 0.75;
 }

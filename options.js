@@ -13,7 +13,16 @@ async function saveOptions(e) {
     };
     for (let trigger of TRIGGERS) {
         options[trigger.key] = document.querySelector(".trigger-name[data-key=" + trigger.key + "]").value.trim();
-        options[trigger.key + '_value'] = document.querySelector(".trigger-value[data-key=" + trigger.key + "]").value.trim();
+        let value = document.querySelector(".trigger-value[data-key=" + trigger.key + "]").value.trim();
+        let ide = document.querySelector(".trigger-ide[data-key=" + trigger.key + "]");
+        if (trigger.ide && ide.value) {
+            // Preset selected, custom input is ignored
+            value = ide.value;
+        }
+        options[trigger.key + '_value'] = value;
+        if (trigger.ide) {
+            options[IDE_CHOSEN_KEY] = true;
+        }
     }
     console.debug(OPTIONS_LOG_PREFIX, 'saving', options);
 
@@ -32,7 +41,9 @@ async function restoreOptions() {
     for (let trigger of triggers) {
         let rows = template.content.cloneNode(true);
         rows.querySelector(".trigger-name-label").textContent = trigger.label + ' cookie name (usually: ' + trigger.defaultName + ')';
-        rows.querySelector(".trigger-value-label").textContent = trigger.label + ' cookie value (must match xdebug.trigger_value, default: ' + trigger.defaultValue + ')';
+        rows.querySelector(".trigger-value-label").textContent = trigger.ide
+            ? 'Custom IDE key (must match xdebug.trigger_value if it is set)'
+            : trigger.label + ' cookie value (must match one of xdebug.trigger_value values if it is set, default: ' + trigger.defaultValue + ')';
         let name = rows.querySelector(".trigger-name");
         let value = rows.querySelector(".trigger-value");
         name.dataset.key = value.dataset.key = trigger.key;
@@ -40,13 +51,44 @@ async function restoreOptions() {
         value.placeholder = trigger.defaultValue;
         name.value = trigger.name;
         value.value = trigger.value;
+        if (trigger.ide) {
+            setupIdeSelect(rows, trigger);
+        }
         container.appendChild(rows);
     }
+
+    let config = await api.storage.sync.get(IDE_CHOSEN_KEY);
+    document.querySelector(".welcome-row").hidden = !!config[IDE_CHOSEN_KEY];
 
     document.querySelector(".cookie-XDEBUG_PROFILE-on-color[value="+ colors.on +"]").checked = true;
     document.querySelector(".cookie-XDEBUG_PROFILE-off-color[value="+ colors.off +"]").checked = true;
 
     await renderPermission();
+}
+
+// IDE presets select; "Custom key" shows the text input for the value
+function setupIdeSelect(rows, trigger) {
+    let select = rows.querySelector(".trigger-ide");
+    let valueRow = rows.querySelector(".trigger-value-row");
+    select.dataset.key = trigger.key;
+    for (let preset of IDE_PRESETS) {
+        select.appendChild(new Option(preset.label + ' (' + preset.key + ')', preset.key));
+    }
+    select.appendChild(new Option('Custom key', ''));
+    let preset = getIdePreset(trigger.value);
+    select.value = preset ? preset.key : '';
+    rows.querySelector(".ide-row").hidden = false;
+    rows.querySelector(".ide-hint-row").hidden = false;
+    valueRow.hidden = !!select.value;
+    select.addEventListener("change", function() {
+        console.debug(OPTIONS_LOG_PREFIX, 'IDE selected:', select.value || '(custom)');
+        valueRow.hidden = !!select.value;
+        if (!select.value) {
+            let input = valueRow.querySelector(".trigger-value");
+            input.placeholder = 'e.g. VSCODE';
+            input.focus();
+        }
+    });
 }
 
 async function renderPermission() {
@@ -65,6 +107,7 @@ async function onGrantClick() {
 }
 
 function showSuccess() {
+    document.querySelector(".welcome-row").hidden = true;
     let messageClass = document.querySelector(".saved-successfully").classList;
 
     messageClass.add(visibilityClass);

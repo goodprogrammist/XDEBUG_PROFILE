@@ -7,7 +7,7 @@ The toolbar popup toggles Xdebug trigger cookies for the current site:
 
 | Trigger | Cookie (default) | Xdebug mode | Badge |
 |---|---|---|---|
-| Debug | `XDEBUG_SESSION=PHPSTORM` | `debug` | D |
+| Debug | `XDEBUG_SESSION=vsc` (IDE key) | `debug` | D |
 | Profile | `XDEBUG_PROFILE=Y` | `profile` | P |
 | Trace | `XDEBUG_TRACE=Y` | `trace` | T |
 
@@ -59,8 +59,14 @@ Open the generated `cachegrind.out.*` files in KCachegrind / QCachegrind.
 
 ## Options
 
-- cookie name and value for every trigger (value must match `xdebug.trigger_value` if it is set;
-  `XDEBUG_SESSION` value is the IDE key);
+- IDE for step debugging: the `XDEBUG_SESSION` value is passed to the IDE as IDE key.
+  Presets: VS Code `vsc` (default, `php.debug.ideKey` of the PHP Debug extension),
+  PhpStorm `PHPSTORM`, NetBeans `netbeans-xdebug`, Eclipse `XDEBUG_ECLIPSE`, MacGDBp `macgdbp`,
+  or a custom key (e.g. `VSCODE`). Without DBGp proxy and `xdebug.trigger_value` any key works;
+  with DBGp proxy it must match the key configured in your IDE.
+  The options page asks to choose the IDE after installation;
+- cookie name and value for every trigger (value must match one of `xdebug.trigger_value`
+  values if it is set, since Xdebug 3.1 it can be a comma separated list);
 - icon colors for "on" and "off" states.
 
 After renaming a cookie in options, cookies with the old name/value are removed from all sites.

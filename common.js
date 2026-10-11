@@ -7,13 +7,35 @@ const IS_FIREFOX = typeof api.runtime.getBrowserInfo === 'function';
 
 // Supported Xdebug triggers. Storage keys of PROFILE are the same as in old versions.
 const TRIGGERS = [
-    { id: 'debug', label: 'Debug', badge: 'D', key: 'cookie_XDEBUG_SESSION', defaultName: 'XDEBUG_SESSION', defaultValue: 'PHPSTORM' },
+    // XDEBUG_SESSION value is passed to the IDE as IDE key (matters only for DBGp proxy or picky IDEs)
+    { id: 'debug', label: 'Debug', badge: 'D', key: 'cookie_XDEBUG_SESSION', defaultName: 'XDEBUG_SESSION', defaultValue: 'vsc', ide: true },
     { id: 'profile', label: 'Profile', badge: 'P', key: 'cookie_XDEBUG_PROFILE', defaultName: 'XDEBUG_PROFILE', defaultValue: 'Y' },
     { id: 'trace', label: 'Trace', badge: 'T', key: 'cookie_XDEBUG_TRACE', defaultName: 'XDEBUG_TRACE', defaultValue: 'Y' }
 ];
 const DEFAULT_ON_COLOR = 'red';
 const DEFAULT_OFF_COLOR = 'light';
 const ALL_URLS = { origins: ['<all_urls>'] };
+// Default IDE keys: VS Code - php.debug.ideKey of xdebug/vscode-php-debug,
+// others - as in Xdebug helper extension. Any other value is a custom key.
+const IDE_PRESETS = [
+    { label: 'VS Code', key: 'vsc' },
+    { label: 'PhpStorm', key: 'PHPSTORM' },
+    { label: 'NetBeans', key: 'netbeans-xdebug' },
+    { label: 'Eclipse', key: 'XDEBUG_ECLIPSE' },
+    { label: 'MacGDBp', key: 'macgdbp' }
+];
+// Set when the user has chosen the IDE on the options page (welcome block is shown until then)
+const IDE_CHOSEN_KEY = 'ide_chosen';
+
+function getIdePreset(key) {
+    return IDE_PRESETS.find(preset => preset.key === key) || null;
+}
+
+// "VS Code (vsc)" or "custom key (VSCODE)"
+function getIdeLabel(key) {
+    let preset = getIdePreset(key);
+    return (preset ? preset.label : 'custom key') + ' (' + key + ')';
+}
 
 function log(...args) {
     console.debug(LOG_PREFIX, ...args);
