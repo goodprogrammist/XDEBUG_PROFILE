@@ -1,4 +1,5 @@
 let popupTab;
+const CUSTOM_IDE_OPTION = '__custom__';
 
 function showError(message) {
     let el = document.querySelector('.error');
@@ -24,7 +25,7 @@ async function render() {
         return;
     }
 
-    let triggers = await getTriggerSettings();
+    let triggers = await getTriggerSettings(host);
     let states = await getStates(popupTab);
     let container = document.querySelector('.triggers');
     let template = document.querySelector('.trigger-template');
@@ -40,9 +41,9 @@ async function render() {
         if (trigger.ide) {
             let ide = row.querySelector('.trigger-ide');
             ide.hidden = false;
-            ide.textContent = getIdeLabel(trigger.value);
-            ide.title = 'Change IDE in settings';
-            ide.addEventListener('click', openOptions);
+            ide.textContent = getIdeLabel(trigger.value) + (trigger.siteValue ? ' - ' + t('forThisSite') : '');
+            ide.title = t('changeSiteIdeTitle');
+            ide.addEventListener('click', toggleSiteIdeRow);
         }
         container.appendChild(row);
     }
@@ -50,12 +51,74 @@ async function render() {
     let select = document.querySelector('.scope');
     let scope = await getScope(host);
     select.textContent = '';
-    select.appendChild(new Option(host + ' (this host only)', ''));
+    select.appendChild(new Option(t('scopeHostOnly', host), ''));
     for (let domain of getDomainCandidates(host)) {
-        select.appendChild(new Option('.' + domain + ' (with subdomains)', domain));
+        select.appendChild(new Option(t('scopeWithSubdomains', domain), domain));
     }
     select.value = scope;
     select.disabled = select.options.length < 2;
+
+    await renderSiteIde(host, triggers.find(t => t.ide));
+}
+
+// Per-site IDE key: "global" option, presets and custom key input
+async function renderSiteIde(host, trigger) {
+    let siteKey = await getSiteIdeKey(host);
+    let global = (await getTriggerSettings()).find(t => t.ide).value;
+    let select = document.querySelector('.site-ide');
+    select.textContent = '';
+    select.appendChild(new Option(t('asInSettings', getIdeLabel(global)), ''));
+    for (let preset of IDE_PRESETS) {
+        select.appendChild(new Option(preset.label + ' (' + preset.key + ')', preset.key));
+    }
+    select.appendChild(new Option(t('customKeyOption'), CUSTOM_IDE_OPTION));
+    let custom = siteKey && !getIdePreset(siteKey);
+    select.value = custom ? CUSTOM_IDE_OPTION : siteKey;
+    document.querySelector('.site-ide-custom-row').hidden = !custom;
+    document.querySelector('.site-ide-custom').value = custom ? siteKey : '';
+    // The row is opened by click on IDE name, stays open when a site key is set
+    if (siteKey) {
+        document.querySelector('.site-ide-row').hidden = false;
+    }
+    log('popup: IDE key for', host, '=', trigger.value, trigger.siteValue ? '(site)' : '(global)');
+}
+
+function toggleSiteIdeRow(e) {
+    e.preventDefault();
+    let row = document.querySelector('.site-ide-row');
+    row.hidden = !row.hidden;
+}
+
+async function applySiteIdeKey(ideKey) {
+    showError('');
+    let host = getHost(popupTab.url);
+    let states = await getStates(popupTab);
+    await setSiteIdeKey(host, ideKey);
+    // Enabled debug cookie is re-set with the new IDE key
+    if (states.debug) {
+        try {
+            await reapplyTriggers(popupTab, ['debug']);
+        } catch (err) {
+            logError('popup: IDE key change failed', err);
+            showError(t('failed', err && err.message || err));
+        }
+    }
+    await render();
+}
+
+async function onSiteIdeChange(e) {
+    if (e.target.value === CUSTOM_IDE_OPTION) {
+        document.querySelector('.site-ide-custom-row').hidden = false;
+        document.querySelector('.site-ide-custom').focus();
+        return;
+    }
+    await applySiteIdeKey(e.target.value);
+}
+
+async function onSiteIdeCustomSubmit(e) {
+    e.preventDefault();
+    let value = document.querySelector('.site-ide-custom').value.trim();
+    await applySiteIdeKey(value);
 }
 
 async function onTriggerChange(e) {
@@ -66,7 +129,7 @@ async function onTriggerChange(e) {
         log('popup: trigger', triggerId, enabled ? 'enabled' : 'disabled');
     } catch (err) {
         logError('popup: toggle failed', triggerId, err);
-        showError('Failed: ' + (err && err.message || err));
+        showError(t('failed', err && err.message || err));
     }
     await render();
 }
@@ -83,7 +146,7 @@ async function onScopeChange(e) {
     } catch (err) {
         // For example, the browser refuses to set a cookie for a public suffix (co.uk)
         logError('popup: scope change failed', err);
-        showError('Failed to set cookie for this domain: ' + (err && err.message || err));
+        showError(t('scopeFailed', err && err.message || err));
         await setScope(host, oldScope);
         await reapplyTriggers(popupTab, enabledIds).catch(err2 => logError('popup: rollback failed', err2));
     }
@@ -95,12 +158,14 @@ async function onGrantClick() {
         await requestHostPermission();
     } catch (err) {
         logError('popup: permission request failed', err);
-        showError('Permission request failed: ' + (err && err.message || err));
+        showError(t('permissionFailed', err && err.message || err));
     }
     await render();
 }
 
 document.querySelector('.scope').addEventListener('change', onScopeChange);
+document.querySelector('.site-ide').addEventListener('change', onSiteIdeChange);
+document.querySelector('.site-ide-custom-row').addEventListener('submit', onSiteIdeCustomSubmit);
 document.querySelector('.grant').addEventListener('click', onGrantClick);
 function openOptions(e) {
     e.preventDefault();
@@ -110,6 +175,7 @@ function openOptions(e) {
 
 document.querySelector('.open-options').addEventListener('click', openOptions);
 
+localizePage();
 render().catch(err => {
     logError('popup: render failed', err);
     showError(String(err && err.message || err));

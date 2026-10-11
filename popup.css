@@ -69,10 +69,26 @@ body {
     border-top: 1px solid var(--border);
 }
 
-.scope {
+.scope,
+.site-ide {
     display: block;
     width: 100%;
     margin-top: 4px;
+}
+
+.site-ide-row {
+    margin-top: 8px;
+}
+
+.site-ide-custom-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.site-ide-custom {
+    flex: 1;
+    min-width: 0;
 }
 
 .notice,
