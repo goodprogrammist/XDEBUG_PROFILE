@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link href="popup.css" rel="stylesheet">
+    </head>
+<body>
+    <div class="host"></div>
+
+    <div class="notice unsupported" hidden>Cookies can't be set on this page.</div>
+
+    <div class="notice no-permission" hidden>
+        The addon needs access to sites to manage cookies.
+        <button type="button" class="grant">Grant access</button>
+    </div>
+
+    <div class="controls" hidden>
+        <div class="triggers"></div>
+
+        <label class="scope-row">
+            Set cookie for
+            <select class="scope"></select>
+        </label>
+    </div>
+
+    <div class="error" hidden></div>
+
+    <div class="footer">
+        <a href="#" class="open-options">Settings</a>
+    </div>
+
+    <template class="trigger-template">
+        <label class="trigger">
+            <input type="checkbox">
+            <span class="trigger-label"></span>
+            <span class="trigger-info">
+                <a href="#" class="trigger-ide" hidden></a>
+                <span class="trigger-cookie"></span>
+            </span>
+        </label>
+    </template>
+
+    <script src="common.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

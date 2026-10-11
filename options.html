@@ -6,11 +6,18 @@
         <link href="options.css" rel="stylesheet">
     </head>
 <body>
+    <div class="welcome-row" hidden>
+        <strong>Choose your IDE</strong> for step debugging below and press Save.
+        The value of the XDEBUG_SESSION cookie is passed to the IDE as IDE key.
+    </div>
+
+    <div class="permission-row" hidden>
+        The addon needs access to sites to manage cookies.
+        <button type="button" class="grant">Grant access</button>
+    </div>
+
     <form class="options-form">
-        <div class="form-row">
-            <label class="input-label">Put here Cookie name (usually: XDEBUG_PROFILE)</label>
-            <input type="text" class="cookie_XDEBUG_PROFILE">
-        </div>
+        <div class="triggers"></div>
         <div class="form-row">
             <label class="input-label">Off icon color</label>
             <label>
@@ -60,9 +67,32 @@
         </div>
 
         <div class="message saved-error">
-            There ware some errors during save, please try again.
+            There were some errors during save, please try again.
         </div>
     </div>
+    <template class="trigger-template">
+        <div class="form-row">
+            <label class="input-label trigger-name-label"></label>
+            <input type="text" class="trigger-name">
+        </div>
+        <div class="form-row ide-row" hidden>
+            <label class="input-label">IDE</label>
+            <select class="trigger-ide"></select>
+        </div>
+        <div class="form-row ide-hint-row" hidden>
+            <span class="hint">
+                Without DBGp proxy and xdebug.trigger_value any IDE key works.
+                With DBGp proxy it must match the key of your IDE
+                (VS Code: php.debug.ideKey setting, default "vsc").
+            </span>
+        </div>
+        <div class="form-row trigger-value-row">
+            <label class="input-label trigger-value-label"></label>
+            <input type="text" class="trigger-value">
+        </div>
+    </template>
+
+    <script src="common.js"></script>
     <script src="options.js"></script>
 </body>
 </html>
