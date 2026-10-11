@@ -1,9 +1,9 @@
 {
     "manifest_version": 2,
     "name": "Manage XDEBUG_PROFILE Cookie for Debugging",
-    "version": "0.1",
+    "version": "0.2",
 
-    "description": "Manage cookie that disables Composite technology.",
+    "description": "Toggle the XDEBUG_PROFILE cookie to trigger the Xdebug profiler on the current site.",
     "homepage_url": "https://github.com/goodprogrammist/XDEBUG_PROFILE",
 
     "icons": {
@@ -23,7 +23,16 @@
             "64": "icons/bug-light-64.png",
             "128": "icons/bug-light-128.png"
         },
-        "default_title": "XDEBUG_PROFILE (off)"
+        "default_title": "XDEBUG_PROFILE cookie (off)"
+    },
+
+    "commands": {
+        "_execute_browser_action": {
+            "suggested_key": {
+                "default": "Alt+Shift+P"
+            },
+            "description": "Toggle XDEBUG_PROFILE cookie"
+        }
     },
 
     "options_ui": {
@@ -31,9 +40,12 @@
         "browser_style": true
     },
 
-    "applications": {
+    "browser_specific_settings": {
         "gecko": {
-            "id": "XDEBUG_PROFILE_cookie_setup@goodprogrammist.ru"
+            "id": "XDEBUG_PROFILE_cookie_setup@goodprogrammist.ru",
+            "data_collection_permissions": {
+                "required": ["none"]
+            }
         }
     },
 
