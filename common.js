@@ -2,8 +2,62 @@
 // Firefox exposes `browser`, Chrome exposes `chrome` (both return promises in MV3).
 const api = globalThis.browser || globalThis.chrome;
 const LOG_PREFIX = '[XDEBUG_PROFILE]';
+
+// --- Safe access to WebExtension APIs ---
+// Browsers support different sets of APIs (e.g. Firefox for Android has no windows and commands),
+// so every API method and event is checked before use.
+
+// Returns the API object or function by path ('tabs.getCurrent'), undefined if the browser has none
+function getApi(path) {
+    let node = api;
+    for (let part of path.split('.')) {
+        if (node === undefined || node === null) {
+            return undefined;
+        }
+        node = node[part];
+    }
+    return node;
+}
+
+function hasApi(path) {
+    return getApi(path) !== undefined;
+}
+
+// Calls an API method if the browser has it, otherwise returns fallback.
+// The result is returned as is (usually a promise), so callers can await it in both cases.
+function callApi(path, args, fallback) {
+    let method = getApi(path);
+    if (typeof method !== 'function') {
+        log('API is not available:', path);
+        return fallback;
+    }
+    return method.apply(getApi(path.split('.').slice(0, -1).join('.')), args || []);
+}
+
+// The same for APIs the action can't work without: throws an error that is shown to the user
+function requireApi(path, args) {
+    let method = getApi(path);
+    if (typeof method !== 'function') {
+        throw new Error('API is not available in this browser: ' + path);
+    }
+    return method.apply(getApi(path.split('.').slice(0, -1).join('.')), args || []);
+}
+
+// Subscribes to an API event if the browser has it, returns false otherwise
+function addApiListener(path, listener) {
+    let event = getApi(path);
+    if (!event || typeof event.addListener !== 'function') {
+        log('API event is not available:', path);
+        return false;
+    }
+    event.addListener(listener);
+    return true;
+}
+
 // firstPartyDomain exists only in Firefox, Chrome rejects unknown properties
-const IS_FIREFOX = typeof api.runtime.getBrowserInfo === 'function';
+const IS_FIREFOX = hasApi('runtime.getBrowserInfo');
+// Settings are kept in storage.sync, or in storage.local if the browser has no sync storage
+const SETTINGS_AREA = hasApi('storage.sync') ? 'sync' : 'local';
 
 // Supported Xdebug triggers. Storage keys of PROFILE are the same as in old versions.
 const TRIGGERS = [
@@ -30,7 +84,7 @@ const IDE_CHOSEN_KEY = 'ide_chosen';
 
 // Localized string from _locales/*/messages.json, falls back to the key itself
 function t(key, ...substitutions) {
-    let message = api.i18n.getMessage(key, substitutions.map(String));
+    let message = callApi('i18n.getMessage', [key, substitutions.map(String)], '');
     if (!message) {
         console.warn(LOG_PREFIX, 'i18n: no message for', key);
         return key;
@@ -84,7 +138,8 @@ function isSupportedUrl(url) {
 
 async function hasHostPermission() {
     try {
-        return await api.permissions.contains(SITE_ORIGINS);
+        // Without the permissions API host permissions are granted at install time
+        return await callApi('permissions.contains', [SITE_ORIGINS], true);
     } catch (e) {
         logError('permissions.contains failed', e);
         return false;
@@ -93,7 +148,7 @@ async function hasHostPermission() {
 
 // Must be called from a user action handler (click)
 async function requestHostPermission() {
-    let granted = await api.permissions.request(SITE_ORIGINS);
+    let granted = await requireApi('permissions.request', [SITE_ORIGINS]);
     log('host permission granted:', granted);
     return granted;
 }
@@ -105,7 +160,7 @@ async function getTriggerSettings(host) {
     for (let trigger of TRIGGERS) {
         keys.push(trigger.key, trigger.key + '_value');
     }
-    let config = await api.storage.sync.get(keys);
+    let config = await callApi('storage.' + SETTINGS_AREA + '.get', [keys], {});
     let siteIdeKey = host ? await getSiteIdeKey(host) : '';
 
     return TRIGGERS.map(trigger => Object.assign({}, trigger, {
@@ -120,22 +175,22 @@ async function getTriggerSettings(host) {
 // Useful when some projects work through DBGp proxy with their own key.
 async function getSiteIdeKey(host) {
     let key = 'idekey:' + host;
-    let data = await api.storage.local.get(key);
+    let data = await callApi('storage.local.get', [key], {});
     return data[key] || '';
 }
 
 async function setSiteIdeKey(host, ideKey) {
     let key = 'idekey:' + host;
     if (ideKey) {
-        await api.storage.local.set({ [key]: ideKey });
+        await callApi('storage.local.set', [{ [key]: ideKey }]);
     } else {
-        await api.storage.local.remove(key);
+        await callApi('storage.local.remove', [key]);
     }
     log('IDE key for', host, '=', ideKey || '(global)');
 }
 
 async function getColors() {
-    let config = await api.storage.sync.get(['cookie_XDEBUG_PROFILE_on_color', 'cookie_XDEBUG_PROFILE_off_color']);
+    let config = await callApi('storage.' + SETTINGS_AREA + '.get', [['cookie_XDEBUG_PROFILE_on_color', 'cookie_XDEBUG_PROFILE_off_color']], {});
 
     return {
         on: config.cookie_XDEBUG_PROFILE_on_color || DEFAULT_ON_COLOR,
@@ -149,7 +204,7 @@ async function getStoreId(tab) {
     if (tab.cookieStoreId) {
         return tab.cookieStoreId;
     }
-    let stores = await api.cookies.getAllCookieStores();
+    let stores = await callApi('cookies.getAllCookieStores', [], []);
     for (let store of stores) {
         if (store.tabIds && store.tabIds.includes(tab.id)) {
             return store.id;
@@ -184,7 +239,7 @@ function getDomainCandidates(host) {
 // Scope is remembered per host: '' - host-only cookie, 'example.com' - cookie for .example.com and subdomains
 async function getScope(host) {
     let key = 'scope:' + host;
-    let data = await api.storage.local.get(key);
+    let data = await callApi('storage.local.get', [key], {});
     let scope = data[key] || '';
     if (scope && !getDomainCandidates(host).includes(scope)) {
         return '';
@@ -195,9 +250,9 @@ async function getScope(host) {
 async function setScope(host, scope) {
     let key = 'scope:' + host;
     if (scope) {
-        await api.storage.local.set({ [key]: scope });
+        await callApi('storage.local.set', [{ [key]: scope }]);
     } else {
-        await api.storage.local.remove(key);
+        await callApi('storage.local.remove', [key]);
     }
     log('scope for', host, '=', scope || '(host only)');
 }
@@ -209,11 +264,11 @@ async function getCookie(tab, trigger) {
 
     let cookie = null;
     try {
-        cookie = await api.cookies.get({
+        cookie = await requireApi('cookies.get', [{
             url: tab.url,
             name: trigger.name,
             storeId: await getStoreId(tab)
-        });
+        }]);
     } catch (e) {
         logError('getCookie failed for', tab.url, trigger.name, e);
         return null;
@@ -252,7 +307,7 @@ async function removeCookie(cookie) {
     if (IS_FIREFOX && cookie.firstPartyDomain !== undefined) {
         details.firstPartyDomain = cookie.firstPartyDomain;
     }
-    await api.cookies.remove(details);
+    await requireApi('cookies.remove', [details]);
     log('removed', cookie.name, 'for', details.url, 'store', cookie.storeId);
 }
 
@@ -266,7 +321,7 @@ async function disableTrigger(tab, trigger) {
     if (IS_FIREFOX) {
         query.firstPartyDomain = null;
     }
-    let cookies = await api.cookies.getAll(query);
+    let cookies = await requireApi('cookies.getAll', [query]);
     for (let cookie of cookies) {
         await removeCookie(cookie);
     }
@@ -285,7 +340,7 @@ async function enableTrigger(tab, trigger) {
     if (scope) {
         details.domain = scope;
     }
-    await api.cookies.set(details);
+    await requireApi('cookies.set', [details]);
     log('set', trigger.name + '=' + trigger.value, 'for', scope ? '.' + scope : host, 'store', details.storeId);
 }
 
@@ -319,6 +374,15 @@ async function reapplyTriggers(tab, triggerIds) {
 }
 
 async function getActiveTab() {
-    let tabs = await api.tabs.query({ active: true, currentWindow: true });
+    let tabs = await callApi('tabs.query', [{ active: true, currentWindow: true }], []);
+    // Firefox for Android shows the popup as a page in its own tab: then the active tab is the
+    // popup itself, and the site is the most recently used other tab
+    let ownTab = typeof document !== 'undefined' ? await callApi('tabs.getCurrent', [], undefined) : undefined;
+    if (ownTab && tabs[0] && tabs[0].id === ownTab.id) {
+        let others = (await callApi('tabs.query', [{}], [])).filter(tab => tab.id !== ownTab.id);
+        others.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+        log('getActiveTab: popup is shown in a tab, using the last used tab', others[0] && others[0].url);
+        return others[0];
+    }
     return tabs[0];
 }

@@ -1,7 +1,9 @@
 # XDEBUG_PROFILE (cookie trigger)
 Firefox addon for setting XDEBUG_PROFILE cookie
 
-Now works in **Firefox 140+** and **Chrome / Chromium 121+** (one Manifest V3 codebase).
+Now works in **Firefox 140+**, **Firefox for Android 142+** and **Chrome / Chromium 121+** (one Manifest V3 codebase).
+On Android there are no keyboard shortcuts (the browser has no commands API); every browser API is
+checked before use, so missing APIs only switch off the related feature.
 
 The toolbar popup toggles Xdebug trigger cookies for the current site:
 
@@ -46,6 +48,7 @@ Package: `npm install && npm run build` → `web-ext-artifacts/*.zip` (works for
 ```sh
 npm install
 npm run lint          # web-ext lint
+npm run test:unit     # no browser: API helpers, Firefox for Android-like environment
 npm run test:chrome   # Playwright, Chromium (CHROMIUM_PATH can point to a custom binary)
 npm run test:firefox  # Selenium + geckodriver, needs Firefox
                       # (FIREFOX_PATH / GECKODRIVER_PATH can point to custom binaries)

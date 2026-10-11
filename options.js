@@ -48,8 +48,12 @@ async function saveOptions(e) {
     }
     console.debug(OPTIONS_LOG_PREFIX, 'saving', options);
 
-    let saved = api.storage.sync.set(options);
-    saved.then(showSuccess, showError);
+    try {
+        await requireApi('storage.' + SETTINGS_AREA + '.set', [options]);
+        showSuccess();
+    } catch (err) {
+        showError(err);
+    }
 }
 
 async function restoreOptions() {
@@ -80,7 +84,7 @@ async function restoreOptions() {
         container.appendChild(rows);
     }
 
-    let config = await api.storage.sync.get(IDE_CHOSEN_KEY);
+    let config = await callApi('storage.' + SETTINGS_AREA + '.get', [IDE_CHOSEN_KEY], {});
     document.querySelector(".welcome-row").hidden = !!config[IDE_CHOSEN_KEY];
 
     document.querySelector(".cookie-XDEBUG_PROFILE-on-color[value="+ colors.on +"]").checked = true;

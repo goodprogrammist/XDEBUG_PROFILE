@@ -22,6 +22,7 @@ Features:
 • Custom cookie names and values (xdebug.trigger_value)
 • Keyboard shortcuts: Alt+Shift+F — profiler, Alt+Shift+D — debugger, Alt+Shift+K — popup
 • Works with Firefox containers, private windows and Chrome incognito (after you allow the extension there in the browser add-on settings)
+• Firefox for Android is supported (without keyboard shortcuts)
 • English, Russian and Kazakh interface
 
 Server setup (Xdebug 3):

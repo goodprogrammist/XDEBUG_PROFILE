@@ -57,10 +57,10 @@ async function renderIcon(tab) {
 
     log('updateIcon: tab', tab.id, tab.url, 'enabled:', badge || '-');
     try {
-        await api.action.setIcon({ path: getIcons(enabled.length ? colors.on : colors.off), tabId: tab.id });
-        await api.action.setTitle({ title: title, tabId: tab.id });
-        await api.action.setBadgeText({ text: badge, tabId: tab.id });
-        await api.action.setBadgeBackgroundColor({ color: '#c0392b', tabId: tab.id });
+        await callApi('action.setIcon', [{ path: getIcons(enabled.length ? colors.on : colors.off), tabId: tab.id }]);
+        await callApi('action.setTitle', [{ title: title, tabId: tab.id }]);
+        await callApi('action.setBadgeText', [{ text: badge, tabId: tab.id }]);
+        await callApi('action.setBadgeBackgroundColor', [{ color: '#c0392b', tabId: tab.id }]);
     } catch (e) {
         // The tab may be closed between query and update
         logError('updateIcon failed', e);
@@ -69,7 +69,7 @@ async function renderIcon(tab) {
 
 // Service worker has no persistent state, so active tabs are always queried
 async function updateActiveTabs() {
-    let tabs = await api.tabs.query({ active: true });
+    let tabs = await callApi('tabs.query', [{ active: true }], []);
     for (let tab of tabs) {
         await updateIcon(tab);
     }
@@ -78,7 +78,7 @@ async function updateActiveTabs() {
 // Removes cookies with the old name after it has been changed in options,
 // otherwise they stay in the browser and keep triggering Xdebug.
 async function removeCookiesByName(name, value) {
-    let stores = await api.cookies.getAllCookieStores();
+    let stores = await callApi('cookies.getAllCookieStores', [], []);
     for (let store of stores) {
         let query = { name: name, storeId: store.id };
         if (IS_FIREFOX) {
@@ -86,7 +86,7 @@ async function removeCookiesByName(name, value) {
         }
         let cookies = [];
         try {
-            cookies = await api.cookies.getAll(query);
+            cookies = await requireApi('cookies.getAll', [query]);
         } catch (e) {
             logError('removeCookiesByName: getAll failed for store', store.id, e);
             continue;
@@ -106,7 +106,7 @@ async function removeCookiesByName(name, value) {
 
 async function onSettingsChanged(changes, area) {
     log('settings changed in', area, changes);
-    if (area === 'sync') {
+    if (area === SETTINGS_AREA) {
         let triggers = await getTriggerSettings();
         for (let trigger of TRIGGERS) {
             let nameChange = changes[trigger.key];
@@ -135,7 +135,7 @@ async function onCookieChanged(changeInfo) {
     }
     log('cookie changed:', changeInfo.cookie.name, changeInfo.cookie.domain, 'removed:', changeInfo.removed, 'cause:', changeInfo.cause);
     let domain = changeInfo.cookie.domain.replace(/^\./, '');
-    let tabs = await api.tabs.query({});
+    let tabs = await callApi('tabs.query', [{}], []);
     for (let tab of tabs) {
         let host = getHost(tab.url);
         if (host === domain || host.endsWith('.' + domain)) {
@@ -154,7 +154,7 @@ function onTabUpdated(tabId, changeInfo, tab) {
 
 async function onTabActivated(activeInfo) {
     try {
-        updateIcon(await api.tabs.get(activeInfo.tabId));
+        updateIcon(await requireApi('tabs.get', [activeInfo.tabId]));
     } catch (e) {
         logError('onTabActivated: tabs.get failed', e);
     }
@@ -178,20 +178,21 @@ async function onInstalled(details) {
     log('installed:', details.reason);
     // On first install the options page asks to choose the IDE
     if (details.reason === 'install' || !await hasHostPermission()) {
-        api.runtime.openOptionsPage();
+        callApi('runtime.openOptionsPage', []);
     }
     await updateActiveTabs();
 }
 
-// Listeners must be registered synchronously at top level (service worker requirement)
-api.tabs.onUpdated.addListener(onTabUpdated);
-api.tabs.onActivated.addListener(onTabActivated);
-api.windows.onFocusChanged.addListener(updateActiveTabs);
-api.cookies.onChanged.addListener(onCookieChanged);
-api.storage.onChanged.addListener(onSettingsChanged);
-api.commands.onCommand.addListener(onCommand);
-api.runtime.onInstalled.addListener(onInstalled);
-api.permissions.onAdded.addListener(updateActiveTabs);
-api.permissions.onRemoved.addListener(updateActiveTabs);
+// Listeners must be registered synchronously at top level (service worker requirement).
+// Missing events are skipped: e.g. Firefox for Android has no windows and commands (keyboard shortcuts) APIs.
+addApiListener('tabs.onUpdated', onTabUpdated);
+addApiListener('tabs.onActivated', onTabActivated);
+addApiListener('cookies.onChanged', onCookieChanged);
+addApiListener('storage.onChanged', onSettingsChanged);
+addApiListener('runtime.onInstalled', onInstalled);
+addApiListener('windows.onFocusChanged', updateActiveTabs);
+addApiListener('commands.onCommand', onCommand);
+addApiListener('permissions.onAdded', updateActiveTabs);
+addApiListener('permissions.onRemoved', updateActiveTabs);
 
 updateActiveTabs();
