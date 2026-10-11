@@ -1,12 +1,14 @@
 {
-    "manifest_version": 2,
-    "name": "Manage XDEBUG_PROFILE Cookie for Debugging",
-    "version": "0.2",
+    "manifest_version": 3,
+    "name": "Xdebug Cookies: Debug, Profile, Trace",
+    "version": "1.0",
 
-    "description": "Toggle the XDEBUG_PROFILE cookie to trigger the Xdebug profiler on the current site.",
+    "description": "Toggle XDEBUG_SESSION, XDEBUG_PROFILE and XDEBUG_TRACE cookies to trigger Xdebug on the current site.",
     "homepage_url": "https://github.com/goodprogrammist/XDEBUG_PROFILE",
 
     "icons": {
+        "16": "icons/bug-green-16.png",
+        "32": "icons/bug-green-32.png",
         "64": "icons/bug-green-64.png",
         "128": "icons/bug-green-128.png"
     },
@@ -14,42 +16,67 @@
     "permissions": [
         "tabs",
         "cookies",
-        "storage",
+        "storage"
+    ],
+
+    "host_permissions": [
         "<all_urls>"
     ],
 
-    "browser_action": {
+    "action": {
         "default_icon": {
+            "16": "icons/bug-light-16.png",
+            "32": "icons/bug-light-32.png",
             "64": "icons/bug-light-64.png",
             "128": "icons/bug-light-128.png"
         },
-        "default_title": "XDEBUG_PROFILE cookie (off)"
+        "default_title": "Xdebug: off",
+        "default_popup": "popup.html"
     },
 
     "commands": {
-        "_execute_browser_action": {
+        "_execute_action": {
+            "suggested_key": {
+                "default": "Alt+Shift+X"
+            },
+            "description": "Open popup"
+        },
+        "toggle-profile": {
             "suggested_key": {
                 "default": "Alt+Shift+P"
             },
-            "description": "Toggle XDEBUG_PROFILE cookie"
+            "description": "Toggle profiler cookie (XDEBUG_PROFILE)"
+        },
+        "toggle-debug": {
+            "suggested_key": {
+                "default": "Alt+Shift+D"
+            },
+            "description": "Toggle debugger cookie (XDEBUG_SESSION)"
+        },
+        "toggle-trace": {
+            "description": "Toggle trace cookie (XDEBUG_TRACE)"
         }
     },
 
     "options_ui": {
         "page": "options.html",
-        "browser_style": true
+        "open_in_tab": false
     },
 
     "browser_specific_settings": {
         "gecko": {
             "id": "XDEBUG_PROFILE_cookie_setup@goodprogrammist.ru",
+            "strict_min_version": "121.0",
             "data_collection_permissions": {
                 "required": ["none"]
             }
         }
     },
 
+    "minimum_chrome_version": "121",
+
     "background": {
-        "scripts": ["cookie_XDEBUG_PROFILE.js"]
+        "service_worker": "background.js",
+        "scripts": ["common.js", "background.js"]
     }
 }

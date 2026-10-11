@@ -1,7 +1,7 @@
 :root {
     --gutter-size: 10px;
     --input-height: 2rem;
-    --label-width: 30rem;
+    --label-width: 26rem;
 }
 
 .options-form,
@@ -82,4 +82,29 @@ input[type=radio],
 .is-visible {
     opacity: 1;
     z-index: 2;
+}
+
+.triggers .form-row + .form-row,
+.triggers + .form-row {
+    margin-top: var(--gutter-size);
+}
+
+.triggers .form-row:nth-child(2n+1):not(:first-child) {
+    margin-top: calc(3 * var(--gutter-size));
+}
+
+.form-row > input[type=text] {
+    flex: 1;
+    min-width: 8rem;
+}
+
+.permission-row {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #c0392b;
+    border-radius: 3px;
+}
+
+[hidden] {
+    display: none !important;
 }
