@@ -15,6 +15,11 @@ The cookie can be set for the current host only or for a parent domain with all
 its subdomains (e.g. `.example.com` for `api.example.com` and `www.example.com`).
 The choice is remembered per host.
 
+Click the IDE name in the popup to set an own IDE key for the current site
+(e.g. a project behind a DBGp proxy). Other sites keep the global key.
+
+Interface languages: English, Russian, Kazakh (follows the browser language).
+
 ## Keyboard shortcuts
 
 - `Alt+Shift+X` - open popup
@@ -32,7 +37,29 @@ Firefox may treat host permissions as optional: if the popup shows "Grant access
 
 Chrome: `chrome://extensions` → enable "Developer mode" → "Load unpacked" → select the repository folder.
 
-Package: `npx web-ext build --ignore-files "screens/*"` (zip works for both browsers).
+Package: `npm install && npm run build` → `web-ext-artifacts/*.zip` (works for both browsers).
+
+## Development
+
+```sh
+npm install
+npm run lint          # web-ext lint
+npm run test:chrome   # Playwright, Chromium (CHROMIUM_PATH can point to a custom binary)
+npm run test:firefox  # Selenium + geckodriver, needs Firefox
+```
+
+GitHub Actions run lint and both browser tests on every push and pull request.
+
+## Release
+
+Bump `version` in `manifest.json`, merge to `master`, then push a tag with the same version:
+
+```sh
+git tag v1.1 && git push origin v1.1
+```
+
+The Release workflow checks the version, builds the zip and creates a GitHub release with it.
+Store listing texts, privacy policy and images are in [`store/`](store/README.md).
 
 ## Server setup (php.ini)
 
@@ -85,7 +112,9 @@ Popup can be opened in a regular tab for a given tab: `popup.html?tabId=N`.
 - `common.js` - shared code (triggers, cookies, settings), used by all pages;
 - `background.js` - icon, badge, shortcuts, sync with cookie/settings changes;
 - `popup.html/js/css` - toolbar popup;
-- `options.html/js/css` - settings page.
+- `options.html/js/css` - settings page;
+- `_locales/` - translations (en, ru, kk);
+- `tests/` - browser tests, `store/` - store listing materials.
 
 ## Screenshots
 
