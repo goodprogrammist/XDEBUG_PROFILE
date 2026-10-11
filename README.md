@@ -1,6 +1,8 @@
 # XDEBUG_PROFILE (cookie trigger)
 Firefox addon for setting XDEBUG_PROFILE cookie
 
+**Install:** [Firefox Add-ons (AMO)](https://addons.mozilla.org/firefox/addon/xdebug_profile-cookie-trigger/) · Chrome Web Store — under review
+
 Now works in **Firefox 140+**, **Firefox for Android 142+** and **Chrome / Chromium 121+** (one Manifest V3 codebase).
 On Android there are no keyboard shortcuts (the browser has no commands API); every browser API is
 checked before use, so missing APIs only switch off the related feature.
