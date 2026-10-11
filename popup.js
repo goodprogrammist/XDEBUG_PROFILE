@@ -118,6 +118,10 @@ async function onSiteIdeChange(e) {
 async function onSiteIdeCustomSubmit(e) {
     e.preventDefault();
     let value = document.querySelector('.site-ide-custom').value.trim();
+    if (!isValidCookieValue(value)) {
+        showError(t('optInvalidValue', value));
+        return;
+    }
     await applySiteIdeKey(value);
 }
 

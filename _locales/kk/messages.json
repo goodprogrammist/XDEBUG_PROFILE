@@ -118,5 +118,18 @@
     },
     "optSaveError": {
         "message": "Сақтау кезінде қате орын алды, қайталап көріңіз."
+    },
+    "optInvalidName": {
+        "message": "Cookie атауы жарамсыз: «$1»."
+    },
+    "optDuplicateName": {
+        "message": "Бір cookie атауы екі рет көрсетілген: «$1»."
+    },
+    "optInvalidValue": {
+        "message": "Cookie мәні жарамсыз: «$1» (бос орын, тырнақша, үтір, нүктелі үтір және кері қиғаш сызық қолдануға болмайды)."
+    },
+    "langCode": {
+        "message": "kk",
+        "description": "Language code of this translation for the lang attribute"
     }
 }

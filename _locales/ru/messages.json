@@ -118,5 +118,18 @@
     },
     "optSaveError": {
         "message": "При сохранении произошла ошибка, попробуйте ещё раз."
+    },
+    "optInvalidName": {
+        "message": "Недопустимое имя cookie: «$1»."
+    },
+    "optDuplicateName": {
+        "message": "Одно и то же имя cookie указано дважды: «$1»."
+    },
+    "optInvalidValue": {
+        "message": "Недопустимое значение cookie: «$1» (нельзя использовать пробелы, кавычки, запятые, точки с запятой и обратную косую черту)."
+    },
+    "langCode": {
+        "message": "ru",
+        "description": "Language code of this translation for the lang attribute"
     }
 }

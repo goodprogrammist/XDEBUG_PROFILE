@@ -1,4 +1,6 @@
 :root {
+    /* Default colors and form controls follow the browser light/dark theme */
+    color-scheme: light dark;
     --gutter-size: 10px;
     --input-height: 2rem;
     --label-width: 26rem;
@@ -51,7 +53,7 @@ input[type=radio],
 
 .message-container {
     position: relative;
-    height: 3.1rem;
+    min-height: 3.1rem;
 }
 
 .message {
@@ -126,4 +128,8 @@ input[type=radio],
     margin-left: calc(var(--label-width) + 2 * var(--gutter-size));
     font-size: 0.85rem;
     opacity: 0.75;
+}
+
+.invalid {
+    outline: 2px solid #c0392b;
 }

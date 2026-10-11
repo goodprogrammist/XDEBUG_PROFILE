@@ -38,13 +38,13 @@
     "commands": {
         "_execute_action": {
             "suggested_key": {
-                "default": "Alt+Shift+X"
+                "default": "Alt+Shift+K"
             },
             "description": "Open popup"
         },
         "toggle-profile": {
             "suggested_key": {
-                "default": "Alt+Shift+P"
+                "default": "Alt+Shift+F"
             },
             "description": "Toggle profiler cookie (XDEBUG_PROFILE)"
         },
