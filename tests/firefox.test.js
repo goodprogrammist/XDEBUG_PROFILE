@@ -24,20 +24,27 @@ function findPackage() {
 describe('Firefox', () => {
     let server, driver, siteHandle, popupHandle, siteTabId;
 
-    // Runs a function in the extension page context (the current tab must be an extension page)
-    async function inExtension(fnSource, arg) {
+    // Calls a function of the extension page by its path (e.g. 'browser.tabs.query') with JSON arguments.
+    // The current tab must be an extension page. CSP of extension pages forbids eval/new Function,
+    // so only existing functions are called.
+    async function inExtension(fnPath, ...args) {
         const json = await driver.executeAsyncScript(`
             const done = arguments[arguments.length - 1];
             const win = window.wrappedJSObject || window;
-            const fn = new win.Function('arg', ${JSON.stringify('return (' + fnSource + ')(arg)')});
-            Promise.resolve(fn(${JSON.stringify(arg === undefined ? null : arg)})).then(
-                r => done(JSON.stringify(r === undefined ? null : r)),
+            const parts = arguments[0].split('.');
+            let context = win;
+            for (const part of parts.slice(0, -1)) {
+                context = context[part];
+            }
+            const fn = context[parts[parts.length - 1]];
+            Promise.resolve(fn.apply(context, win.JSON.parse(arguments[1]))).then(
+                r => done(win.JSON.stringify(r === undefined ? null : r)),
                 e => done(JSON.stringify({ __error: String(e) }))
             );
-        `);
+        `, fnPath, JSON.stringify(args));
         const result = JSON.parse(json);
         if (result && result.__error) {
-            throw new Error(result.__error);
+            throw new Error(fnPath + ': ' + result.__error);
         }
         return result;
     }
@@ -52,11 +59,25 @@ describe('Firefox', () => {
 
     async function openPopup(tabId = siteTabId) {
         await driver.switchTo().window(popupHandle);
-        await driver.get(`${BASE}popup.html?tabId=${tabId}`);
+        await openExtensionPage(`${BASE}popup.html?tabId=${tabId}`);
         await eventually(async () => {
             const rows = await driver.findElements(By.css('.trigger input'));
             assert.ok(rows.length > 0 || await isVisible('.unsupported'));
         });
+    }
+
+    // WebDriver can't navigate content to moz-extension:// URLs, so the page is loaded
+    // from the browser (chrome) context with the system principal
+    async function openExtensionPage(url) {
+        await driver.setContext(firefox.Context.CHROME);
+        await driver.executeScript(`
+            const win = Services.wm.getMostRecentWindow('navigator:browser');
+            win.gBrowser.selectedBrowser.fixupAndLoadURIString(arguments[0], {
+                triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal()
+            });`, url);
+        await driver.setContext(firefox.Context.CONTENT);
+        await eventually(async () => assert.equal(await driver.getCurrentUrl(), url));
+        await eventually(async () => assert.equal(await driver.executeScript('return document.readyState'), 'complete'));
     }
 
     async function isVisible(selector) {
@@ -64,9 +85,9 @@ describe('Firefox', () => {
         return elements.length > 0 && await elements[0].isDisplayed();
     }
 
-    const badge = () => inExtension('id => api.action.getBadgeText({ tabId: id })', siteTabId);
-    const cookies = name => inExtension(
-        'n => api.cookies.getAll({ name: n, firstPartyDomain: null }).then(list => list.map(c => c.domain + "=" + c.value))', name);
+    const badge = () => inExtension('browser.action.getBadgeText', { tabId: siteTabId });
+    const cookies = async name => (await inExtension('browser.cookies.getAll', { name: name, firstPartyDomain: null }))
+        .map(c => c.domain + '=' + c.value);
     const select = async (selector, value) => {
         await new Select(await driver.findElement(By.css(selector))).selectByValue(value);
     };
@@ -79,19 +100,42 @@ describe('Firefox', () => {
             // Test hosts are resolved to 127.0.0.1
             .setPreference('network.dns.localDomains', 'app.example.co.uk,other.example.co.uk')
             .setPreference('dom.security.https_first', false)
-            .setPreference('dom.security.https_first_schemeless', false);
-        driver = await new Builder().forBrowser('firefox').setFirefoxOptions(options).build();
+            .setPreference('dom.security.https_first_schemeless', false)
+            // Direct connection: test hosts must not go through a system proxy
+            .setPreference('network.proxy.type', 0);
+        // Custom Firefox / geckodriver, otherwise they are found by Selenium Manager
+        if (process.env.FIREFOX_PATH) {
+            options.setBinary(process.env.FIREFOX_PATH);
+        }
+        // --allow-system-access: needed for the chrome context used by openExtensionPage()
+        const service = new firefox.ServiceBuilder(process.env.GECKODRIVER_PATH || undefined)
+            .addArguments('--allow-system-access');
+        driver = await new Builder().forBrowser('firefox')
+            .setFirefoxOptions(options)
+            .setFirefoxService(service)
+            .build();
         const caps = await driver.getCapabilities();
         console.log('[test] Firefox', caps.get('browserVersion'));
 
         await driver.installAddon(findPackage(), true);
+        // The addon opens its options (about:addons) after install and Firefox may reuse
+        // the current blank tab for it, so the site is opened in a new tab after that
+        await eventually(async () => {
+            let found = false;
+            for (const handle of await driver.getAllWindowHandles()) {
+                await driver.switchTo().window(handle);
+                found = found || (await driver.getCurrentUrl()).startsWith('about:addons');
+            }
+            assert.ok(found, 'options page is not opened yet');
+        }, 10000);
+        await driver.switchTo().newWindow('tab');
         siteHandle = await driver.getWindowHandle();
         await driver.get(SITE);
         await driver.switchTo().newWindow('tab');
         popupHandle = await driver.getWindowHandle();
-        await driver.get(BASE + 'options.html');
+        await openExtensionPage(BASE + 'options.html');
         siteTabId = await eventually(async () => {
-            const tabs = await inExtension('() => api.tabs.query({ url: "http://app.example.co.uk/*" })');
+            const tabs = await inExtension('browser.tabs.query', { url: 'http://app.example.co.uk/*' });
             assert.equal(tabs.length, 1);
             return tabs[0].id;
         });
@@ -107,8 +151,8 @@ describe('Firefox', () => {
     });
 
     it('runs as Firefox and has host permission', async () => {
-        assert.equal(await inExtension('() => typeof api.runtime.getBrowserInfo'), 'function');
-        assert.equal(await inExtension('() => hasHostPermission()'), true);
+        assert.equal((await inExtension('browser.runtime.getBrowserInfo')).name, 'Firefox');
+        assert.equal(await inExtension('hasHostPermission'), true);
         assert.ok(!await isVisible('.no-permission'));
     });
 
@@ -170,13 +214,13 @@ describe('Firefox', () => {
     });
 
     it('options page: IDE choice is saved', async () => {
-        await driver.get(BASE + 'options.html');
+        await openExtensionPage(BASE + 'options.html');
         await eventually(async () => assert.ok(await isVisible('.trigger-ide')));
         assert.ok(await isVisible('.welcome-row'));
         await select('.trigger-ide', 'PHPSTORM');
         await driver.findElement(By.css('button[type=submit]')).click();
         await eventually(async () => assert.equal(
-            (await inExtension('() => api.storage.sync.get("cookie_XDEBUG_SESSION_value")')).cookie_XDEBUG_SESSION_value, 'PHPSTORM'));
+            (await inExtension('browser.storage.sync.get', 'cookie_XDEBUG_SESSION_value')).cookie_XDEBUG_SESSION_value, 'PHPSTORM'));
         assert.ok(!await isVisible('.welcome-row'));
     });
 
