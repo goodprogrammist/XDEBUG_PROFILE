@@ -14,7 +14,8 @@ const TRIGGERS = [
 ];
 const DEFAULT_ON_COLOR = 'red';
 const DEFAULT_OFF_COLOR = 'light';
-const ALL_URLS = { origins: ['<all_urls>'] };
+// Must match host_permissions in manifest.json
+const SITE_ORIGINS = { origins: ['http://*/*', 'https://*/*'] };
 // Default IDE keys: VS Code - php.debug.ideKey of xdebug/vscode-php-debug,
 // others - as in Xdebug helper extension. Any other value is a custom key.
 const IDE_PRESETS = [
@@ -70,7 +71,7 @@ function isSupportedUrl(url) {
 
 async function hasHostPermission() {
     try {
-        return await api.permissions.contains(ALL_URLS);
+        return await api.permissions.contains(SITE_ORIGINS);
     } catch (e) {
         logError('permissions.contains failed', e);
         return false;
@@ -79,7 +80,7 @@ async function hasHostPermission() {
 
 // Must be called from a user action handler (click)
 async function requestHostPermission() {
-    let granted = await api.permissions.request(ALL_URLS);
+    let granted = await api.permissions.request(SITE_ORIGINS);
     log('host permission granted:', granted);
     return granted;
 }
