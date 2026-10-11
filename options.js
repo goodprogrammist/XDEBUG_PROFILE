@@ -40,10 +40,11 @@ async function restoreOptions() {
     container.textContent = '';
     for (let trigger of triggers) {
         let rows = template.content.cloneNode(true);
-        rows.querySelector(".trigger-name-label").textContent = trigger.label + ' cookie name (usually: ' + trigger.defaultName + ')';
+        localizePage(rows);
+        rows.querySelector(".trigger-name-label").textContent = t('optCookieName', trigger.label, trigger.defaultName);
         rows.querySelector(".trigger-value-label").textContent = trigger.ide
-            ? 'Custom IDE key (must match xdebug.trigger_value if it is set)'
-            : trigger.label + ' cookie value (must match one of xdebug.trigger_value values if it is set, default: ' + trigger.defaultValue + ')';
+            ? t('optCustomIdeKey')
+            : t('optCookieValue', trigger.label, trigger.defaultValue);
         let name = rows.querySelector(".trigger-name");
         let value = rows.querySelector(".trigger-value");
         name.dataset.key = value.dataset.key = trigger.key;
@@ -74,7 +75,7 @@ function setupIdeSelect(rows, trigger) {
     for (let preset of IDE_PRESETS) {
         select.appendChild(new Option(preset.label + ' (' + preset.key + ')', preset.key));
     }
-    select.appendChild(new Option('Custom key', ''));
+    select.appendChild(new Option(t('optCustomKeyOption'), ''));
     let preset = getIdePreset(trigger.value);
     select.value = preset ? preset.key : '';
     rows.querySelector(".ide-row").hidden = false;
@@ -85,7 +86,7 @@ function setupIdeSelect(rows, trigger) {
         valueRow.hidden = !!select.value;
         if (!select.value) {
             let input = valueRow.querySelector(".trigger-value");
-            input.placeholder = 'e.g. VSCODE';
+            input.placeholder = t('placeholderCustom');
             input.focus();
         }
     });
@@ -128,6 +129,7 @@ function hideMessages() {
     });
 }
 
+localizePage();
 document.addEventListener('DOMContentLoaded', restoreOptions);
 document.querySelector("form").addEventListener("submit", saveOptions);
 document.querySelector(".grant").addEventListener("click", onGrantClick);

@@ -27,6 +27,24 @@ const IDE_PRESETS = [
 // Set when the user has chosen the IDE on the options page (welcome block is shown until then)
 const IDE_CHOSEN_KEY = 'ide_chosen';
 
+// Localized string from _locales/*/messages.json, falls back to the key itself
+function t(key, ...substitutions) {
+    let message = api.i18n.getMessage(key, substitutions.map(String));
+    if (!message) {
+        console.warn(LOG_PREFIX, 'i18n: no message for', key);
+        return key;
+    }
+    return message;
+}
+
+// Translates elements with data-i18n (text), data-i18n-placeholder and data-i18n-title attributes
+function localizePage(root) {
+    root = root || document;
+    root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    root.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+    root.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+}
+
 function getIdePreset(key) {
     return IDE_PRESETS.find(preset => preset.key === key) || null;
 }
@@ -34,7 +52,7 @@ function getIdePreset(key) {
 // "VS Code (vsc)" or "custom key (VSCODE)"
 function getIdeLabel(key) {
     let preset = getIdePreset(key);
-    return (preset ? preset.label : 'custom key') + ' (' + key + ')';
+    return (preset ? preset.label : t('customKey')) + ' (' + key + ')';
 }
 
 function log(...args) {
@@ -66,18 +84,40 @@ async function requestHostPermission() {
     return granted;
 }
 
-// Returns [{...trigger, name, value}] with values from settings
-async function getTriggerSettings() {
+// Returns [{...trigger, name, value, siteValue}] with values from settings.
+// host - apply per-site overrides (IDE key of the debug trigger), siteValue is true then.
+async function getTriggerSettings(host) {
     let keys = [];
     for (let trigger of TRIGGERS) {
         keys.push(trigger.key, trigger.key + '_value');
     }
     let config = await api.storage.sync.get(keys);
+    let siteIdeKey = host ? await getSiteIdeKey(host) : '';
 
     return TRIGGERS.map(trigger => Object.assign({}, trigger, {
+        label: t('trigger_' + trigger.id),
         name: config[trigger.key] || trigger.defaultName,
-        value: config[trigger.key + '_value'] || trigger.defaultValue
+        value: (trigger.ide && siteIdeKey) || config[trigger.key + '_value'] || trigger.defaultValue,
+        siteValue: !!(trigger.ide && siteIdeKey)
     }));
+}
+
+// IDE key for a site, overrides the global one ('' - use global).
+// Useful when some projects work through DBGp proxy with their own key.
+async function getSiteIdeKey(host) {
+    let key = 'idekey:' + host;
+    let data = await api.storage.local.get(key);
+    return data[key] || '';
+}
+
+async function setSiteIdeKey(host, ideKey) {
+    let key = 'idekey:' + host;
+    if (ideKey) {
+        await api.storage.local.set({ [key]: ideKey });
+    } else {
+        await api.storage.local.remove(key);
+    }
+    log('IDE key for', host, '=', ideKey || '(global)');
 }
 
 async function getColors() {
@@ -177,7 +217,7 @@ async function getCookie(tab, trigger) {
 
 // Returns {debug: cookie|null, profile: ..., trace: ...}
 async function getStates(tab) {
-    let triggers = await getTriggerSettings();
+    let triggers = await getTriggerSettings(getHost(tab.url));
     let states = {};
     for (let trigger of triggers) {
         states[trigger.id] = await getCookie(tab, trigger);
@@ -241,7 +281,7 @@ async function toggleTrigger(tab, triggerId) {
         log('toggleTrigger: skipped, unsupported url', tab && tab.url);
         return false;
     }
-    let triggers = await getTriggerSettings();
+    let triggers = await getTriggerSettings(getHost(tab.url));
     let trigger = triggers.find(t => t.id === triggerId);
     if (await getCookie(tab, trigger)) {
         await disableTrigger(tab, trigger);
@@ -254,7 +294,7 @@ async function toggleTrigger(tab, triggerId) {
 // Re-sets enabled cookies after scope change.
 // triggerIds - triggers to (re)enable, by default the currently enabled ones.
 async function reapplyTriggers(tab, triggerIds) {
-    let triggers = await getTriggerSettings();
+    let triggers = await getTriggerSettings(getHost(tab.url));
     for (let trigger of triggers) {
         let enabled = triggerIds ? triggerIds.includes(trigger.id) : !!await getCookie(tab, trigger);
         if (enabled) {

@@ -1,0 +1,122 @@
+{
+    "extName": {
+        "message": "Xdebug Cookies: Debug, Profile, Trace"
+    },
+    "extDescription": {
+        "message": "Toggle XDEBUG_SESSION, XDEBUG_PROFILE and XDEBUG_TRACE cookies to trigger Xdebug on the current site."
+    },
+    "trigger_debug": {
+        "message": "Debug"
+    },
+    "trigger_profile": {
+        "message": "Profile"
+    },
+    "trigger_trace": {
+        "message": "Trace"
+    },
+    "popupUnsupported": {
+        "message": "Cookies can't be set on this page."
+    },
+    "needPermission": {
+        "message": "The addon needs access to sites to manage cookies."
+    },
+    "grantAccess": {
+        "message": "Grant access"
+    },
+    "setCookieFor": {
+        "message": "Set cookie for"
+    },
+    "scopeHostOnly": {
+        "message": "$1 (this host only)"
+    },
+    "scopeWithSubdomains": {
+        "message": ".$1 (with subdomains)"
+    },
+    "siteIdeKey": {
+        "message": "IDE key for this site"
+    },
+    "asInSettings": {
+        "message": "As in settings: $1"
+    },
+    "customKeyOption": {
+        "message": "Custom key..."
+    },
+    "customKey": {
+        "message": "custom key"
+    },
+    "setButton": {
+        "message": "Set"
+    },
+    "forThisSite": {
+        "message": "for this site"
+    },
+    "changeSiteIdeTitle": {
+        "message": "Change IDE key for this site"
+    },
+    "settings": {
+        "message": "Settings"
+    },
+    "failed": {
+        "message": "Failed: $1"
+    },
+    "scopeFailed": {
+        "message": "Failed to set cookie for this domain: $1"
+    },
+    "permissionFailed": {
+        "message": "Permission request failed: $1"
+    },
+    "placeholderCustom": {
+        "message": "e.g. VSCODE"
+    },
+    "titleOff": {
+        "message": "Xdebug: off"
+    },
+    "titleOn": {
+        "message": "Xdebug: $1"
+    },
+    "titleUnavailable": {
+        "message": "Xdebug cookies (not available on this page)"
+    },
+    "titleNoPermission": {
+        "message": "Xdebug cookies: click to grant access to sites"
+    },
+    "optWelcomeTitle": {
+        "message": "Choose your IDE"
+    },
+    "optWelcomeText": {
+        "message": "for step debugging below and press Save. The value of the XDEBUG_SESSION cookie is passed to the IDE as IDE key."
+    },
+    "optCookieName": {
+        "message": "$1 cookie name (usually: $2)"
+    },
+    "optCookieValue": {
+        "message": "$1 cookie value (must match one of xdebug.trigger_value values if it is set, default: $2)"
+    },
+    "optCustomIdeKey": {
+        "message": "Custom IDE key (must match xdebug.trigger_value if it is set)"
+    },
+    "optIde": {
+        "message": "IDE"
+    },
+    "optIdeHint": {
+        "message": "Without DBGp proxy and xdebug.trigger_value any IDE key works. With DBGp proxy it must match the key of your IDE (VS Code: php.debug.ideKey setting, default \"vsc\")."
+    },
+    "optCustomKeyOption": {
+        "message": "Custom key"
+    },
+    "optOffColor": {
+        "message": "Off icon color"
+    },
+    "optOnColor": {
+        "message": "On icon color"
+    },
+    "optSave": {
+        "message": "Save"
+    },
+    "optSaved": {
+        "message": "Options saved successfully."
+    },
+    "optSaveError": {
+        "message": "There were some errors during save, please try again."
+    }
+}

@@ -7,26 +7,37 @@
 <body>
     <div class="host"></div>
 
-    <div class="notice unsupported" hidden>Cookies can't be set on this page.</div>
+    <div class="notice unsupported" hidden data-i18n="popupUnsupported"></div>
 
     <div class="notice no-permission" hidden>
-        The addon needs access to sites to manage cookies.
-        <button type="button" class="grant">Grant access</button>
+        <span data-i18n="needPermission"></span>
+        <button type="button" class="grant" data-i18n="grantAccess"></button>
     </div>
 
     <div class="controls" hidden>
         <div class="triggers"></div>
 
         <label class="scope-row">
-            Set cookie for
+            <span data-i18n="setCookieFor"></span>
             <select class="scope"></select>
         </label>
+
+        <div class="site-ide-row" hidden>
+            <label>
+                <span data-i18n="siteIdeKey"></span>
+                <select class="site-ide"></select>
+            </label>
+            <form class="site-ide-custom-row" hidden>
+                <input type="text" class="site-ide-custom" data-i18n-placeholder="placeholderCustom">
+                <button type="submit" data-i18n="setButton"></button>
+            </form>
+        </div>
     </div>
 
     <div class="error" hidden></div>
 
     <div class="footer">
-        <a href="#" class="open-options">Settings</a>
+        <a href="#" class="open-options" data-i18n="settings"></a>
     </div>
 
     <template class="trigger-template">

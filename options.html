@@ -7,19 +7,19 @@
     </head>
 <body>
     <div class="welcome-row" hidden>
-        <strong>Choose your IDE</strong> for step debugging below and press Save.
-        The value of the XDEBUG_SESSION cookie is passed to the IDE as IDE key.
+        <strong data-i18n="optWelcomeTitle"></strong>
+        <span data-i18n="optWelcomeText"></span>
     </div>
 
     <div class="permission-row" hidden>
-        The addon needs access to sites to manage cookies.
-        <button type="button" class="grant">Grant access</button>
+        <span data-i18n="needPermission"></span>
+        <button type="button" class="grant" data-i18n="grantAccess"></button>
     </div>
 
     <form class="options-form">
         <div class="triggers"></div>
         <div class="form-row">
-            <label class="input-label">Off icon color</label>
+            <label class="input-label" data-i18n="optOffColor"></label>
             <label>
                 <input type="radio" name="off_color" class="cookie-XDEBUG_PROFILE-off-color" value="red">
                 <img class="cookie-XDEBUG_PROFILE-icon" src="icons/bug-red-64.png" alt="red">
@@ -38,7 +38,7 @@
             </label>
         </div>
         <div class="form-row">
-            <label class="input-label">On icon color</label>
+            <label class="input-label" data-i18n="optOnColor"></label>
             <label>
                 <input type="radio" name="on_color" class="cookie-XDEBUG_PROFILE-on-color" value="red">
                 <img class="cookie-XDEBUG_PROFILE-icon" src="icons/bug-red-64.png" alt="red">
@@ -57,18 +57,14 @@
             </label>
         </div>
         <div class="form-row">
-            <button type="submit">Save</button>
+            <button type="submit" data-i18n="optSave"></button>
         </div>
     </form>
 
     <div class="message-container">
-        <div class="message saved-successfully">
-            Options saved successfully.
-        </div>
+        <div class="message saved-successfully" data-i18n="optSaved"></div>
 
-        <div class="message saved-error">
-            There were some errors during save, please try again.
-        </div>
+        <div class="message saved-error" data-i18n="optSaveError"></div>
     </div>
     <template class="trigger-template">
         <div class="form-row">
@@ -76,15 +72,11 @@
             <input type="text" class="trigger-name">
         </div>
         <div class="form-row ide-row" hidden>
-            <label class="input-label">IDE</label>
+            <label class="input-label" data-i18n="optIde"></label>
             <select class="trigger-ide"></select>
         </div>
         <div class="form-row ide-hint-row" hidden>
-            <span class="hint">
-                Without DBGp proxy and xdebug.trigger_value any IDE key works.
-                With DBGp proxy it must match the key of your IDE
-                (VS Code: php.debug.ideKey setting, default "vsc").
-            </span>
+            <span class="hint" data-i18n="optIdeHint"></span>
         </div>
         <div class="form-row trigger-value-row">
             <label class="input-label trigger-value-label"></label>

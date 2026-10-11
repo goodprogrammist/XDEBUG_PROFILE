@@ -1,7 +1,7 @@
 # XDEBUG_PROFILE (cookie trigger)
 Firefox addon for setting XDEBUG_PROFILE cookie
 
-Now works in **Firefox 121+** and **Chrome / Chromium 121+** (one Manifest V3 codebase).
+Now works in **Firefox 140+** and **Chrome / Chromium 121+** (one Manifest V3 codebase).
 
 The toolbar popup toggles Xdebug trigger cookies for the current site:
 

@@ -41,16 +41,18 @@ async function renderIcon(tab) {
     }
 
     let states = await getStates(tab);
-    let triggers = await getTriggerSettings();
+    let triggers = await getTriggerSettings(getHost(tab.url));
     let colors = await getColors();
     let enabled = triggers.filter(t => states[t.id]);
     let badge = enabled.map(t => t.badge).join('');
 
-    let title = 'Xdebug: ' + (enabled.length ? enabled.map(t => t.label + ' (' + t.name + ')').join(', ') : 'off');
+    let title = enabled.length
+        ? t('titleOn', enabled.map(trigger => trigger.label + ' (' + trigger.name + ')').join(', '))
+        : t('titleOff');
     if (!isSupportedUrl(tab.url)) {
-        title = 'Xdebug cookies (not available on this page)';
+        title = t('titleUnavailable');
     } else if (!await hasHostPermission()) {
-        title = 'Xdebug cookies: click to grant access to sites';
+        title = t('titleNoPermission');
     }
 
     log('updateIcon: tab', tab.id, tab.url, 'enabled:', badge || '-');

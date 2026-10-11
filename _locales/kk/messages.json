@@ -1,0 +1,122 @@
+{
+    "extName": {
+        "message": "Xdebug Cookies: Debug, Profile, Trace"
+    },
+    "extDescription": {
+        "message": "Ағымдағы сайтта Xdebug-ты іске қосу үшін XDEBUG_SESSION, XDEBUG_PROFILE және XDEBUG_TRACE cookie файлдарын қосады."
+    },
+    "trigger_debug": {
+        "message": "Жөндеу"
+    },
+    "trigger_profile": {
+        "message": "Профиль"
+    },
+    "trigger_trace": {
+        "message": "Трассировка"
+    },
+    "popupUnsupported": {
+        "message": "Бұл бетте cookie орнату мүмкін емес."
+    },
+    "needPermission": {
+        "message": "Cookie файлдарын басқару үшін кеңейтуге сайттарға рұқсат қажет."
+    },
+    "grantAccess": {
+        "message": "Рұқсат беру"
+    },
+    "setCookieFor": {
+        "message": "Cookie орнату аймағы"
+    },
+    "scopeHostOnly": {
+        "message": "$1 (тек осы хост)"
+    },
+    "scopeWithSubdomains": {
+        "message": ".$1 (ішкі домендерімен)"
+    },
+    "siteIdeKey": {
+        "message": "Осы сайтқа арналған IDE key"
+    },
+    "asInSettings": {
+        "message": "Баптаулардағыдай: $1"
+    },
+    "customKeyOption": {
+        "message": "Өз кілтім..."
+    },
+    "customKey": {
+        "message": "өз кілтім"
+    },
+    "setButton": {
+        "message": "Қолдану"
+    },
+    "forThisSite": {
+        "message": "осы сайт үшін"
+    },
+    "changeSiteIdeTitle": {
+        "message": "Осы сайттың IDE key мәнін өзгерту"
+    },
+    "settings": {
+        "message": "Баптаулар"
+    },
+    "failed": {
+        "message": "Қате: $1"
+    },
+    "scopeFailed": {
+        "message": "Бұл доменге cookie орнату мүмкін болмады: $1"
+    },
+    "permissionFailed": {
+        "message": "Рұқсат сұрау сәтсіз аяқталды: $1"
+    },
+    "placeholderCustom": {
+        "message": "мысалы, VSCODE"
+    },
+    "titleOff": {
+        "message": "Xdebug: өшірулі"
+    },
+    "titleOn": {
+        "message": "Xdebug: $1"
+    },
+    "titleUnavailable": {
+        "message": "Xdebug cookie (бұл бетте қолжетімсіз)"
+    },
+    "titleNoPermission": {
+        "message": "Xdebug cookie: сайттарға рұқсат беру үшін басыңыз"
+    },
+    "optWelcomeTitle": {
+        "message": "IDE таңдаңыз"
+    },
+    "optWelcomeText": {
+        "message": "қадамдық жөндеу үшін төменде таңдап, «Сақтау» батырмасын басыңыз. XDEBUG_SESSION cookie мәні IDE-ге IDE key ретінде беріледі."
+    },
+    "optCookieName": {
+        "message": "«$1» режимінің cookie атауы (әдетте: $2)"
+    },
+    "optCookieValue": {
+        "message": "«$1» режимінің cookie мәні (xdebug.trigger_value берілсе, оның мәндерінің біріне сәйкес болуы керек; әдепкі: $2)"
+    },
+    "optCustomIdeKey": {
+        "message": "Өз IDE key (xdebug.trigger_value берілсе, оған сәйкес болуы керек)"
+    },
+    "optIde": {
+        "message": "IDE"
+    },
+    "optIdeHint": {
+        "message": "DBGp прокси мен xdebug.trigger_value болмаса, кез келген IDE key жарайды. DBGp прокси қолданылса, ол IDE-дегі кілтпен сәйкес болуы керек (VS Code: php.debug.ideKey баптауы, әдепкі «vsc»)."
+    },
+    "optCustomKeyOption": {
+        "message": "Өз кілтім"
+    },
+    "optOffColor": {
+        "message": "Белгіше түсі: өшірулі"
+    },
+    "optOnColor": {
+        "message": "Белгіше түсі: қосулы"
+    },
+    "optSave": {
+        "message": "Сақтау"
+    },
+    "optSaved": {
+        "message": "Баптаулар сақталды."
+    },
+    "optSaveError": {
+        "message": "Сақтау кезінде қате орын алды, қайталап көріңіз."
+    }
+}

@@ -1,0 +1,122 @@
+{
+    "extName": {
+        "message": "Xdebug Cookies: Debug, Profile, Trace"
+    },
+    "extDescription": {
+        "message": "Включает cookie XDEBUG_SESSION, XDEBUG_PROFILE и XDEBUG_TRACE, чтобы запускать Xdebug на текущем сайте."
+    },
+    "trigger_debug": {
+        "message": "Отладка"
+    },
+    "trigger_profile": {
+        "message": "Профиль"
+    },
+    "trigger_trace": {
+        "message": "Трассировка"
+    },
+    "popupUnsupported": {
+        "message": "На этой странице нельзя установить cookie."
+    },
+    "needPermission": {
+        "message": "Расширению нужен доступ к сайтам, чтобы управлять cookie."
+    },
+    "grantAccess": {
+        "message": "Дать доступ"
+    },
+    "setCookieFor": {
+        "message": "Ставить cookie для"
+    },
+    "scopeHostOnly": {
+        "message": "$1 (только этот хост)"
+    },
+    "scopeWithSubdomains": {
+        "message": ".$1 (с поддоменами)"
+    },
+    "siteIdeKey": {
+        "message": "IDE key для этого сайта"
+    },
+    "asInSettings": {
+        "message": "Как в настройках: $1"
+    },
+    "customKeyOption": {
+        "message": "Свой ключ..."
+    },
+    "customKey": {
+        "message": "свой ключ"
+    },
+    "setButton": {
+        "message": "Применить"
+    },
+    "forThisSite": {
+        "message": "для этого сайта"
+    },
+    "changeSiteIdeTitle": {
+        "message": "Изменить IDE key для этого сайта"
+    },
+    "settings": {
+        "message": "Настройки"
+    },
+    "failed": {
+        "message": "Ошибка: $1"
+    },
+    "scopeFailed": {
+        "message": "Не удалось установить cookie для этого домена: $1"
+    },
+    "permissionFailed": {
+        "message": "Не удалось запросить доступ: $1"
+    },
+    "placeholderCustom": {
+        "message": "например, VSCODE"
+    },
+    "titleOff": {
+        "message": "Xdebug: выключен"
+    },
+    "titleOn": {
+        "message": "Xdebug: $1"
+    },
+    "titleUnavailable": {
+        "message": "Xdebug cookie (недоступно на этой странице)"
+    },
+    "titleNoPermission": {
+        "message": "Xdebug cookie: нажмите, чтобы дать доступ к сайтам"
+    },
+    "optWelcomeTitle": {
+        "message": "Выберите IDE"
+    },
+    "optWelcomeText": {
+        "message": "для пошаговой отладки ниже и нажмите «Сохранить». Значение cookie XDEBUG_SESSION передаётся в IDE как IDE key."
+    },
+    "optCookieName": {
+        "message": "Имя cookie для режима «$1» (обычно: $2)"
+    },
+    "optCookieValue": {
+        "message": "Значение cookie для режима «$1» (должно совпадать с одним из значений xdebug.trigger_value, если оно задано; по умолчанию: $2)"
+    },
+    "optCustomIdeKey": {
+        "message": "Свой IDE key (должен совпадать с xdebug.trigger_value, если оно задано)"
+    },
+    "optIde": {
+        "message": "IDE"
+    },
+    "optIdeHint": {
+        "message": "Без DBGp-прокси и xdebug.trigger_value подходит любой IDE key. С DBGp-прокси он должен совпадать с ключом в вашей IDE (VS Code: настройка php.debug.ideKey, по умолчанию «vsc»)."
+    },
+    "optCustomKeyOption": {
+        "message": "Свой ключ"
+    },
+    "optOffColor": {
+        "message": "Цвет иконки: выключено"
+    },
+    "optOnColor": {
+        "message": "Цвет иконки: включено"
+    },
+    "optSave": {
+        "message": "Сохранить"
+    },
+    "optSaved": {
+        "message": "Настройки сохранены."
+    },
+    "optSaveError": {
+        "message": "При сохранении произошла ошибка, попробуйте ещё раз."
+    }
+}
