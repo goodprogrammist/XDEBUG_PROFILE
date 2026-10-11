@@ -175,6 +175,16 @@ describe('Firefox', () => {
         assert.deepEqual(labels, ['Debug', 'Profile', 'Trace']);
     });
 
+    it('popup opened as a tab (as on Firefox for Android) works for the last used site tab', async () => {
+        await driver.switchTo().window(siteHandle);
+        await driver.switchTo().window(popupHandle);
+        await openExtensionPage(BASE + 'popup.html');
+        await eventually(async () => assert.equal(await driver.findElement(By.css('.host')).getText(), 'app.example.co.uk'));
+        assert.ok(!await isVisible('.unsupported'));
+        assert.ok((await driver.findElements(By.css('.trigger input'))).length === 3);
+        await openPopup();
+    });
+
     it('toggles profile cookie and badge', async () => {
         await driver.findElement(By.css('.trigger input[data-trigger=profile]')).click();
         await eventually(async () => assert.match(await sitePageText(), /XDEBUG_PROFILE=Y/));
@@ -311,7 +321,12 @@ describe('Firefox', () => {
         }, 10000);
         assert.equal(await inExtension('browser.extension.isAllowedIncognitoAccess'), true);
         await openExtensionPage(BASE + 'options.html');
-        const before = await inExtension('browser.tabs.query', { cookieStoreId: 'firefox-private' });
+        // Right after the addon reload the page may still be initializing, so the call is retried
+        const before = await eventually(async () => {
+            const tabs = await inExtension('browser.tabs.query', { cookieStoreId: 'firefox-private' });
+            assert.ok(Array.isArray(tabs));
+            return tabs;
+        }, 10000);
         console.log('[test] private tabs opened before the permission, url:', before.map(t => t.url));
         // A private window opened after the permission is granted (the usual user flow)
         await openSpecialTab(SITE, 'private');

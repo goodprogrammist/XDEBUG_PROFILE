@@ -10,7 +10,7 @@ function showError(message) {
 async function render() {
     // popup.html?tabId=N opens the popup for a given tab (for debugging in a regular tab)
     let debugTabId = new URLSearchParams(location.search).get('tabId');
-    popupTab = debugTabId ? await api.tabs.get(Number(debugTabId)) : await getActiveTab();
+    popupTab = debugTabId ? await callApi('tabs.get', [Number(debugTabId)], undefined) : await getActiveTab();
     let host = popupTab ? getHost(popupTab.url) : '';
     log('popup: render for', popupTab && popupTab.url);
 
@@ -173,7 +173,7 @@ document.querySelector('.site-ide-custom-row').addEventListener('submit', onSite
 document.querySelector('.grant').addEventListener('click', onGrantClick);
 function openOptions(e) {
     e.preventDefault();
-    api.runtime.openOptionsPage();
+    callApi('runtime.openOptionsPage', []);
     window.close();
 }
 

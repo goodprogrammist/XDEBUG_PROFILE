@@ -8,7 +8,7 @@ const { SITE, OTHER_SITE, startServer, eventually } = require('./helpers');
 
 const EXT_DIR = path.resolve(__dirname, '..');
 
-async function launch(lang) {
+async function launch(lang, extraArgs) {
     const args = [
         `--disable-extensions-except=${EXT_DIR}`,
         `--load-extension=${EXT_DIR}`,
@@ -19,6 +19,7 @@ async function launch(lang) {
     if (lang) {
         args.push('--lang=' + lang);
     }
+    args.push(...(extraArgs || []));
     const context = await chromium.launchPersistentContext('', {
         executablePath: process.env.CHROMIUM_PATH || undefined,
         headless: false,
@@ -90,6 +91,16 @@ describe('Chromium', () => {
             'Profile XDEBUG_PROFILE=Y',
             'Trace XDEBUG_TRACE=Y'
         ]);
+    });
+
+    it('popup opened as a tab (as on Firefox for Android) works for the last used site tab', async () => {
+        await site.bringToFront();
+        const asTab = await context.newPage();
+        await asTab.goto(`chrome-extension://${extensionId}/popup.html`);
+        await eventually(async () => assert.equal(await asTab.textContent('.host'), 'app.example.co.uk'));
+        await asTab.waitForSelector('.trigger input');
+        assert.ok(await asTab.isHidden('.unsupported'));
+        await asTab.close();
     });
 
     it('toggles profile cookie and badge', async () => {
@@ -290,7 +301,9 @@ describe('Chromium incognito', () => {
 
     before(async () => {
         server = await startServer();
-        ({ context, extensionId } = await launch());
+        // Incognito tries https:// first (HTTPS-First mode) and the http-only test server makes
+        // the page load wait for that attempt; Playwright's own HttpsUpgrades switch is kept
+        ({ context, extensionId } = await launch(undefined, ['--disable-features=HttpsUpgrades,HttpsFirstModeIncognito']));
     });
 
     after(async () => {
@@ -317,7 +330,8 @@ describe('Chromium incognito', () => {
             let tab;
             for (let i = 0; i < 50; i++) {
                 tab = (await api.tabs.query({ windowId: win.id }))[0];
-                if (tab.status === 'complete' && tab.url) {
+                // A new window first reports "complete" for about:blank, so wait for the site itself
+                if (tab.status === 'complete' && tab.url === site) {
                     break;
                 }
                 await new Promise(r => setTimeout(r, 200));
