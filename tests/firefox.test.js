@@ -70,9 +70,9 @@ describe('Firefox', () => {
     // from the browser (chrome) context with the system principal
     async function openExtensionPage(url) {
         await driver.setContext(firefox.Context.CHROME);
+        // In the chrome context `window` is the browser window of the current WebDriver tab
         await driver.executeScript(`
-            const win = Services.wm.getMostRecentWindow('navigator:browser');
-            win.gBrowser.selectedBrowser.fixupAndLoadURIString(arguments[0], {
+            window.gBrowser.selectedBrowser.fixupAndLoadURIString(arguments[0], {
                 triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal()
             });`, url);
         await driver.setContext(firefox.Context.CONTENT);
@@ -102,7 +102,9 @@ describe('Firefox', () => {
             .setPreference('dom.security.https_first', false)
             .setPreference('dom.security.https_first_schemeless', false)
             // Direct connection: test hosts must not go through a system proxy
-            .setPreference('network.proxy.type', 0);
+            .setPreference('network.proxy.type', 0)
+            // Containers for the container tab test
+            .setPreference('privacy.userContext.enabled', true);
         // Custom Firefox / geckodriver, otherwise they are found by Selenium Manager
         if (process.env.FIREFOX_PATH) {
             options.setBinary(process.env.FIREFOX_PATH);
@@ -154,6 +156,15 @@ describe('Firefox', () => {
         assert.equal((await inExtension('browser.runtime.getBrowserInfo')).name, 'Firefox');
         assert.equal(await inExtension('hasHostPermission'), true);
         assert.ok(!await isVisible('.no-permission'));
+    });
+
+    it('keyboard shortcuts are assigned', async () => {
+        const commands = await inExtension('browser.commands.getAll');
+        const shortcuts = Object.fromEntries(commands.map(c => [c.name, c.shortcut]));
+        console.log('[test] shortcuts', shortcuts);
+        assert.equal(shortcuts._execute_action, 'Alt+Shift+K');
+        assert.equal(shortcuts['toggle-profile'], 'Alt+Shift+F');
+        assert.equal(shortcuts['toggle-debug'], 'Alt+Shift+D');
     });
 
     it('shows three triggers', async () => {
@@ -222,6 +233,117 @@ describe('Firefox', () => {
         await eventually(async () => assert.equal(
             (await inExtension('browser.storage.sync.get', 'cookie_XDEBUG_SESSION_value')).cookie_XDEBUG_SESSION_value, 'PHPSTORM'));
         assert.ok(!await isVisible('.welcome-row'));
+    });
+
+    // Opens a tab from the browser (chrome) context: in a container or in a new private window
+    async function openSpecialTab(url, kind) {
+        await driver.setContext(firefox.Context.CHROME);
+        await driver.executeScript(`
+            const principal = Services.scriptSecurityManager.getSystemPrincipal();
+            if (arguments[1] === 'private') {
+                const privateWin = window.OpenBrowserWindow({ private: true });
+                // The window is ready for navigation only after its delayed startup,
+                // otherwise the initial about:privatebrowsing page may replace the site
+                privateWin.addEventListener('load', () => {
+                    privateWin.delayedStartupPromise.then(() => {
+                        privateWin.gBrowser.selectedBrowser.fixupAndLoadURIString(arguments[0], { triggeringPrincipal: principal });
+                    });
+                }, { once: true });
+            } else {
+                window.gBrowser.addTab(arguments[0], { userContextId: 1, triggeringPrincipal: principal });
+            }`, url, kind);
+        await driver.setContext(firefox.Context.CONTENT);
+    }
+
+    it('works in a container tab (own cookie store)', async () => {
+        await openSpecialTab(SITE, 'container');
+        await openExtensionPage(BASE + 'options.html');
+        const tab = await eventually(async () => {
+            const tabs = await inExtension('browser.tabs.query', { cookieStoreId: 'firefox-container-1' });
+            assert.equal(tabs.length, 1);
+            assert.equal(tabs[0].status, 'complete');
+            return tabs[0];
+        }, 10000);
+        await openPopup(tab.id);
+        await driver.findElement(By.css('.trigger input[data-trigger=profile]')).click();
+        const inStore = async storeId => (await inExtension('browser.cookies.getAll',
+            { name: 'XDEBUG_PROFILE', storeId: storeId, firstPartyDomain: null })).length;
+        await eventually(async () => assert.equal(await inStore('firefox-container-1'), 1));
+        assert.equal(await inStore('firefox-default'), 0, 'cookie must not leak to the default store');
+        await openPopup(tab.id);
+        await driver.findElement(By.css('.trigger input[data-trigger=profile]')).click();
+        await eventually(async () => assert.equal(await inStore('firefox-container-1'), 0));
+        await inExtension('browser.tabs.remove', tab.id);
+    });
+
+    // Same as the user switch "Run in Private Windows" in about:addons: permission + addon reload
+    async function allowInPrivateWindows() {
+        await driver.setContext(firefox.Context.CHROME);
+        await driver.executeAsyncScript(`
+            const done = arguments[arguments.length - 1];
+            const { ExtensionPermissions } = ChromeUtils.importESModule('resource://gre/modules/ExtensionPermissions.sys.mjs');
+            const { AddonManager } = ChromeUtils.importESModule('resource://gre/modules/AddonManager.sys.mjs');
+            ExtensionPermissions.add(arguments[0], { permissions: ['internal:privateBrowsingAllowed'], origins: [] })
+                .then(() => AddonManager.getAddonByID(arguments[0]))
+                .then(addon => addon.reload())
+                .then(() => done('ok'), e => done(String(e)));`, ADDON_ID);
+        await driver.setContext(firefox.Context.CONTENT);
+    }
+
+    it('is not active in private windows until the user allows it', async () => {
+        await openSpecialTab(SITE, 'private');
+        await openExtensionPage(BASE + 'options.html');
+        // Wait until the private tab exists for the browser, then make sure the addon does not see it
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        assert.equal((await inExtension('browser.tabs.query', { cookieStoreId: 'firefox-private' })).length, 0);
+        assert.equal(await inExtension('browser.extension.isAllowedIncognitoAccess'), false);
+    });
+
+    it('works in a private window when allowed', async () => {
+        await allowInPrivateWindows();
+        // The reload closes extension pages, including the tab used for them
+        await driver.switchTo().window(siteHandle);
+        await driver.switchTo().newWindow('tab');
+        popupHandle = await driver.getWindowHandle();
+        await eventually(async () => {
+            await openExtensionPage(BASE + 'options.html');
+            assert.equal(await inExtension('hasHostPermission'), true);
+        }, 10000);
+        assert.equal(await inExtension('browser.extension.isAllowedIncognitoAccess'), true);
+        await openExtensionPage(BASE + 'options.html');
+        const before = await inExtension('browser.tabs.query', { cookieStoreId: 'firefox-private' });
+        console.log('[test] private tabs opened before the permission, url:', before.map(t => t.url));
+        // A private window opened after the permission is granted (the usual user flow)
+        await openSpecialTab(SITE, 'private');
+        await openExtensionPage(BASE + 'options.html');
+        const tab = await eventually(async () => {
+            const tabs = (await inExtension('browser.tabs.query', { cookieStoreId: 'firefox-private' }))
+                .filter(t => t.url === SITE && t.status === 'complete');
+            // Both private windows (opened before and after the permission) show the site
+            assert.equal(tabs.length, 2);
+            return tabs[1];
+        }, 10000);
+        assert.equal(tab.incognito, true);
+        await openPopup(tab.id);
+        await driver.findElement(By.css('.trigger input[data-trigger=profile]')).click();
+        const inStore = async storeId => (await inExtension('browser.cookies.getAll',
+            { name: 'XDEBUG_PROFILE', storeId: storeId, firstPartyDomain: null })).length;
+        await eventually(async () => assert.equal(await inStore('firefox-private'), 1));
+        assert.equal(await inStore('firefox-default'), 0, 'cookie must not leak to the default store');
+        await inExtension('browser.windows.remove', tab.windowId);
+    });
+
+    it('removes cookie of an IPv6 host', async () => {
+        await openExtensionPage(BASE + 'options.html');
+        // Cookie API does not need a loaded page, the tab object is enough
+        const fakeTab = { id: -1, url: 'http://[::1]:8765/' };
+        assert.equal(await inExtension('toggleTrigger', fakeTab, 'profile'), true);
+        const list = async () => (await inExtension('browser.cookies.getAll',
+            { name: 'XDEBUG_PROFILE', firstPartyDomain: null })).map(c => c.domain);
+        console.log('[test] IPv6 cookie domain:', await list());
+        assert.equal((await list()).length, 1);
+        assert.equal(await inExtension('toggleTrigger', fakeTab, 'profile'), false);
+        assert.deepEqual(await list(), []);
     });
 
     it('shows unsupported message on browser pages', async () => {

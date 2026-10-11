@@ -22,9 +22,11 @@ Interface languages: English, Russian, Kazakh (follows the browser language).
 
 ## Keyboard shortcuts
 
-- `Alt+Shift+X` - open popup
-- `Alt+Shift+P` - toggle profiler cookie
+- `Alt+Shift+K` - open popup
+- `Alt+Shift+F` - toggle profiler cookie
 - `Alt+Shift+D` - toggle debugger cookie
+
+(`Alt+Shift+P` and `Alt+Shift+X` are reserved by Chrome for tab groups.)
 - toggle trace cookie - no default shortcut
 
 Firefox: `about:addons` → gear → "Manage Extension Shortcuts".

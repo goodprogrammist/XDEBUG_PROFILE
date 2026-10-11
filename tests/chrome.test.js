@@ -73,6 +73,15 @@ describe('Chromium', () => {
         assert.ok(urls.some(u => u.includes('options')), 'pages: ' + urls.join(', '));
     });
 
+    it('keyboard shortcuts are assigned (not reserved by Chrome)', async () => {
+        const commands = await worker.evaluate(() => api.commands.getAll());
+        const shortcuts = Object.fromEntries(commands.map(c => [c.name, c.shortcut]));
+        console.log('[test] shortcuts', shortcuts);
+        assert.equal(shortcuts._execute_action, 'Alt+Shift+K');
+        assert.equal(shortcuts['toggle-profile'], 'Alt+Shift+F');
+        assert.equal(shortcuts['toggle-debug'], 'Alt+Shift+D');
+    });
+
     it('has host permission and shows three triggers', async () => {
         assert.ok(await popup.isHidden('.no-permission'));
         const rows = await popup.$$eval('.trigger', els => els.map(e => e.textContent.replace(/\s+/g, ' ').trim()));
@@ -189,6 +198,46 @@ describe('Chromium', () => {
         await options.close();
     });
 
+    it('options: invalid and duplicate cookie names are not saved', async () => {
+        const options = await context.newPage();
+        await options.goto(`chrome-extension://${extensionId}/options.html`);
+        await options.waitForSelector('.trigger-name');
+        const stored = () => worker.evaluate(() => api.storage.sync.get(null));
+        const before = await stored();
+
+        await options.fill('.trigger-name[data-key=cookie_XDEBUG_TRACE]', 'XDEBUG TRACE');
+        await options.click('button[type=submit]');
+        await eventually(async () => assert.match(await options.textContent('.saved-error'), /XDEBUG TRACE/));
+        assert.ok(await options.isVisible('.saved-error'));
+        assert.equal(await options.getAttribute('.trigger-name[data-key=cookie_XDEBUG_TRACE]', 'class'), 'trigger-name invalid');
+
+        await options.fill('.trigger-name[data-key=cookie_XDEBUG_TRACE]', 'XDEBUG_PROFILE');
+        await options.click('button[type=submit]');
+        await eventually(async () => assert.match(await options.textContent('.saved-error'), /twice: "XDEBUG_PROFILE"/));
+
+        await options.fill('.trigger-name[data-key=cookie_XDEBUG_TRACE]', 'XDEBUG_TRACE');
+        await options.fill('.trigger-value[data-key=cookie_XDEBUG_PROFILE]', 'a;b');
+        await options.click('button[type=submit]');
+        await eventually(async () => assert.match(await options.textContent('.saved-error'), /"a;b"/));
+        assert.deepEqual(await stored(), before, 'invalid options must not be saved');
+
+        await options.fill('.trigger-value[data-key=cookie_XDEBUG_PROFILE]', 'Y');
+        await options.click('button[type=submit]');
+        await eventually(async () => assert.ok(await options.isVisible('.saved-successfully')));
+        assert.equal(await options.$$eval('.invalid', els => els.length), 0);
+        await options.close();
+    });
+
+    it('popup: invalid custom IDE key is rejected', async () => {
+        await openPopup();
+        await popup.click('.trigger-ide');
+        await popup.selectOption('.site-ide', '__custom__');
+        await popup.fill('.site-ide-custom', 'my key');
+        await popup.click('.site-ide-custom-row button');
+        await eventually(async () => assert.match(await popup.textContent('.error'), /"my key"/));
+        assert.equal(await worker.evaluate(() => getSiteIdeKey('app.example.co.uk')), '');
+    });
+
     it('shows unsupported message on browser pages', async () => {
         // Without the "tabs" permission non-http tabs can't be found by URL, so the site tab is reused
         await site.goto('about:blank');
@@ -235,3 +284,54 @@ for (const [lang, debugLabel, settingsLabel] of [['ru', 'Отладка', 'На�
         });
     });
 }
+
+describe('Chromium incognito', () => {
+    let server, context, extensionId;
+
+    before(async () => {
+        server = await startServer();
+        ({ context, extensionId } = await launch());
+    });
+
+    after(async () => {
+        await context.close();
+        server.close();
+    });
+
+    it('works in incognito after the user allows it (own cookie store)', async () => {
+        // Same switches as on chrome://extensions: developer mode (unpacked addon) and "Allow in Incognito"
+        const page = await context.newPage();
+        await page.goto('chrome://extensions/');
+        const info = id => page.evaluate(i => new Promise(r => chrome.developerPrivate.getExtensionInfo(i, r)), id);
+        assert.equal((await info(extensionId)).incognitoAccess.isActive, false, 'not allowed in incognito by default');
+        await page.evaluate(() => new Promise(r => chrome.developerPrivate.updateProfileConfiguration({ inDeveloperMode: true }, r)));
+        await page.evaluate(id => new Promise(r => chrome.developerPrivate.updateExtensionConfiguration(
+            { extensionId: id, incognitoAccess: true }, r)), extensionId);
+        await eventually(async () => assert.equal((await info(extensionId)).state, 'ENABLED'), 10000);
+
+        // The addon is reloaded, its functions are called from an extension page
+        const extPage = await context.newPage();
+        await eventually(() => extPage.goto(`chrome-extension://${extensionId}/options.html`), 10000);
+        const result = await extPage.evaluate(async site => {
+            const win = await api.windows.create({ incognito: true, url: site });
+            let tab;
+            for (let i = 0; i < 50; i++) {
+                tab = (await api.tabs.query({ windowId: win.id }))[0];
+                if (tab.status === 'complete' && tab.url) {
+                    break;
+                }
+                await new Promise(r => setTimeout(r, 200));
+            }
+            const count = async storeId => (await api.cookies.getAll({ name: 'XDEBUG_PROFILE', storeId: storeId })).length;
+            const out = { incognito: tab.incognito, store: await getStoreId(tab) };
+            out.enabled = await toggleTrigger(tab, 'profile');
+            out.inIncognito = await count('1');
+            out.inNormal = await count('0');
+            out.disabled = await toggleTrigger(tab, 'profile');
+            out.afterOff = await count('1');
+            await api.windows.remove(win.id);
+            return out;
+        }, SITE);
+        assert.deepEqual(result, { incognito: true, store: '1', enabled: true, inIncognito: 1, inNormal: 0, disabled: false, afterOff: 0 });
+    });
+});

@@ -20,8 +20,8 @@ Features:
 • IDE presets: VS Code (vsc), PhpStorm, NetBeans, Eclipse, MacGDBp or a custom IDE key
 • Own IDE key for a site (e.g. projects behind a DBGp proxy)
 • Custom cookie names and values (xdebug.trigger_value)
-• Keyboard shortcuts: Alt+Shift+P — profiler, Alt+Shift+D — debugger, Alt+Shift+X — popup
-• Works with Firefox containers and private windows
+• Keyboard shortcuts: Alt+Shift+F — profiler, Alt+Shift+D — debugger, Alt+Shift+K — popup
+• Works with Firefox containers, private windows and Chrome incognito (after you allow the extension there in the browser add-on settings)
 • English, Russian and Kazakh interface
 
 Server setup (Xdebug 3):

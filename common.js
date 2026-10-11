@@ -40,10 +40,23 @@ function t(key, ...substitutions) {
 
 // Translates elements with data-i18n (text), data-i18n-placeholder and data-i18n-title attributes
 function localizePage(root) {
-    root = root || document;
+    if (!root) {
+        root = document;
+        // Language of the translation actually used (stored in messages.json)
+        document.documentElement.lang = t('langCode');
+    }
     root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
     root.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
     root.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+}
+
+// RFC 6265: cookie-name is a token, cookie-value has no spaces, quotes, commas, semicolons, backslashes
+function isValidCookieName(name) {
+    return /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(name);
+}
+
+function isValidCookieValue(value) {
+    return /^[\x21\x23-\x2B\x2D-\x3A\x3C-\x5B\x5D-\x7E]*$/.test(value);
 }
 
 function getIdePreset(key) {

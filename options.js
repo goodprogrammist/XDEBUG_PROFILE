@@ -11,18 +11,40 @@ async function saveOptions(e) {
         cookie_XDEBUG_PROFILE_on_color: onColor ? onColor.value : DEFAULT_ON_COLOR,
         cookie_XDEBUG_PROFILE_off_color: offColor ? offColor.value : DEFAULT_OFF_COLOR
     };
+    let errors = [];
+    let names = {};
+    document.querySelectorAll(".invalid").forEach(el => el.classList.remove("invalid"));
     for (let trigger of TRIGGERS) {
-        options[trigger.key] = document.querySelector(".trigger-name[data-key=" + trigger.key + "]").value.trim();
+        let nameInput = document.querySelector(".trigger-name[data-key=" + trigger.key + "]");
+        options[trigger.key] = nameInput.value.trim();
+        let effectiveName = options[trigger.key] || trigger.defaultName;
+        if (!isValidCookieName(effectiveName)) {
+            errors.push(t('optInvalidName', effectiveName));
+            nameInput.classList.add("invalid");
+        } else if (names[effectiveName]) {
+            errors.push(t('optDuplicateName', effectiveName));
+            nameInput.classList.add("invalid");
+        }
+        names[effectiveName] = true;
         let value = document.querySelector(".trigger-value[data-key=" + trigger.key + "]").value.trim();
         let ide = document.querySelector(".trigger-ide[data-key=" + trigger.key + "]");
         if (trigger.ide && ide.value) {
             // Preset selected, custom input is ignored
             value = ide.value;
         }
+        if (!isValidCookieValue(value)) {
+            errors.push(t('optInvalidValue', value));
+            document.querySelector(".trigger-value[data-key=" + trigger.key + "]").classList.add("invalid");
+        }
         options[trigger.key + '_value'] = value;
         if (trigger.ide) {
             options[IDE_CHOSEN_KEY] = true;
         }
+    }
+    if (errors.length) {
+        console.debug(OPTIONS_LOG_PREFIX, 'not saved, invalid values:', errors);
+        showError(errors.join(' '));
+        return;
     }
     console.debug(OPTIONS_LOG_PREFIX, 'saving', options);
 
@@ -117,10 +139,16 @@ function showSuccess() {
     }, 2000);
 }
 
-function showError(error) {
-    console.error(OPTIONS_LOG_PREFIX, 'save failed', error);
-    let messageClass = document.querySelector(".saved-error").classList;
-    messageClass.add(visibilityClass);
+// message - validation text; without it (storage error) the generic text is shown
+function showError(message) {
+    let element = document.querySelector(".saved-error");
+    if (typeof message === 'string') {
+        element.textContent = message;
+    } else {
+        console.error(OPTIONS_LOG_PREFIX, 'save failed', message);
+        element.textContent = t('optSaveError');
+    }
+    element.classList.add(visibilityClass);
 }
 
 function hideMessages() {

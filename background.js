@@ -192,5 +192,6 @@ api.storage.onChanged.addListener(onSettingsChanged);
 api.commands.onCommand.addListener(onCommand);
 api.runtime.onInstalled.addListener(onInstalled);
 api.permissions.onAdded.addListener(updateActiveTabs);
+api.permissions.onRemoved.addListener(updateActiveTabs);
 
 updateActiveTabs();

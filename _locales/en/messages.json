@@ -118,5 +118,18 @@
     },
     "optSaveError": {
         "message": "There were some errors during save, please try again."
+    },
+    "optInvalidName": {
+        "message": "Invalid cookie name: \"$1\"."
+    },
+    "optDuplicateName": {
+        "message": "The same cookie name is used twice: \"$1\"."
+    },
+    "optInvalidValue": {
+        "message": "Invalid cookie value: \"$1\" (spaces, quotes, commas, semicolons and backslashes are not allowed)."
+    },
+    "langCode": {
+        "message": "en",
+        "description": "Language code of this translation for the lang attribute"
     }
 }

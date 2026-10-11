@@ -20,8 +20,8 @@ Xdebug Cookies: Debug, Profile, Trace
 • Готовые IDE: VS Code (vsc), PhpStorm, NetBeans, Eclipse, MacGDBp или свой IDE key
 • Свой IDE key для отдельного сайта (например, для проектов за DBGp-прокси)
 • Свои имена и значения cookie (xdebug.trigger_value)
-• Горячие клавиши: Alt+Shift+P — профайлер, Alt+Shift+D — отладчик, Alt+Shift+X — окно
-• Работает с контейнерами Firefox и приватными окнами
+• Горячие клавиши: Alt+Shift+F — профайлер, Alt+Shift+D — отладчик, Alt+Shift+K — окно
+• Работает с контейнерами Firefox, приватными окнами и режимом инкогнито Chrome (после того как вы разрешите там расширение в настройках дополнений браузера)
 • Интерфейс на английском, русском и казахском
 
 Настройка сервера (Xdebug 3):
