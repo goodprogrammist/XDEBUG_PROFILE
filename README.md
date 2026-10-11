@@ -46,6 +46,7 @@ npm install
 npm run lint          # web-ext lint
 npm run test:chrome   # Playwright, Chromium (CHROMIUM_PATH can point to a custom binary)
 npm run test:firefox  # Selenium + geckodriver, needs Firefox
+                      # (FIREFOX_PATH / GECKODRIVER_PATH can point to custom binaries)
 ```
 
 GitHub Actions run lint and both browser tests on every push and pull request.
