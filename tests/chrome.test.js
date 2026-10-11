@@ -190,12 +190,10 @@ describe('Chromium', () => {
     });
 
     it('shows unsupported message on browser pages', async () => {
-        const blank = await context.newPage();
-        await blank.goto('about:blank');
-        const blankTabId = await worker.evaluate(async () => (await api.tabs.query({ url: 'about:blank' }))[0].id);
-        await popup.goto(`chrome-extension://${extensionId}/popup.html?tabId=${blankTabId}`);
+        // Without the "tabs" permission non-http tabs can't be found by URL, so the site tab is reused
+        await site.goto('about:blank');
+        await popup.goto(`chrome-extension://${extensionId}/popup.html?tabId=${siteTabId}`);
         await eventually(async () => assert.ok(await popup.isVisible('.unsupported')));
-        await blank.close();
     });
 
     it('has no unexpected console errors', () => {
