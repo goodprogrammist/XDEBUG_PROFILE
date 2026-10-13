@@ -4,20 +4,17 @@
 Xdebug Cookies: Debug, Profile, Trace
 
 ## Summary (short description)
-Toggle XDEBUG_SESSION, XDEBUG_PROFILE and XDEBUG_TRACE cookies to trigger Xdebug on the current site.
+Toggle Xdebug debug, profile and trace cookies on the current site.
 
 ## Description
 Start PHP step debugging, profiling or function tracing with Xdebug in one click.
 
-The toolbar popup toggles Xdebug trigger cookies for the current site:
-• Debug — XDEBUG_SESSION (value is the IDE key)
-• Profile — XDEBUG_PROFILE
-• Trace — XDEBUG_TRACE
+The toolbar popup toggles Xdebug trigger cookies for the current site, with a separate switch for each mode: debug, profile and trace.
 
 Features:
 • Badge on the toolbar icon shows enabled modes (D, P, T)
 • Cookie for the current host only or for a parent domain with all subdomains
-• IDE presets: VS Code (vsc), PhpStorm, NetBeans, Eclipse, MacGDBp or a custom IDE key
+• IDE presets or a custom IDE key
 • Own IDE key for a site (e.g. projects behind a DBGp proxy)
 • Custom cookie names and values (xdebug.trigger_value)
 • Keyboard shortcuts: Alt+Shift+F — profiler, Alt+Shift+D — debugger, Alt+Shift+K — popup

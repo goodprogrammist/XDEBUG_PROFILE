@@ -3,7 +3,7 @@
         "message": "Xdebug Cookies: Debug, Profile, Trace"
     },
     "extDescription": {
-        "message": "Toggle XDEBUG_SESSION, XDEBUG_PROFILE and XDEBUG_TRACE cookies to trigger Xdebug on the current site."
+        "message": "Toggle Xdebug debug, profile and trace cookies on the current site."
     },
     "trigger_debug": {
         "message": "Debug"

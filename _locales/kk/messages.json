@@ -3,7 +3,7 @@
         "message": "Xdebug Cookies: Debug, Profile, Trace"
     },
     "extDescription": {
-        "message": "Ағымдағы сайтта Xdebug-ты іске қосу үшін XDEBUG_SESSION, XDEBUG_PROFILE және XDEBUG_TRACE cookie файлдарын қосады."
+        "message": "Ағымдағы сайтта Xdebug-тың отладка, профильдеу және трассировка cookie файлдарын қосады."
     },
     "trigger_debug": {
         "message": "Жөндеу"
